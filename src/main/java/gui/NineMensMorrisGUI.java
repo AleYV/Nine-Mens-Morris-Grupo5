@@ -1,6 +1,7 @@
 package gui;
 
 import controller.NineMensMorrisGame;
+import controller.NineMensMorrisGame.Celdas;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,13 +10,14 @@ import java.awt.event.MouseEvent;
 
 public class NineMensMorrisGUI extends JFrame {
     public static final int CELL_SIZE = 77;
-    public static final int CELL_PADDING = CELL_SIZE / 6;
+    public static final int TOTAL_PIECES = 9;
+    public static final String PATH = System.getProperty("user.dir") + "\\src\\assets\\img\\Piece_";
+
+    private boolean state = false;
 
     private JLabel gameStatusBar;
-    private JLabel whitePiecesStart;
-    private JLabel blackPiecesStart;
 
-    private Gameboard gameboard;
+    private GameBoard gameboard;
 
     private NineMensMorrisGame controller;
 
@@ -34,60 +36,95 @@ public class NineMensMorrisGUI extends JFrame {
     }
 
     private void setContentPane() {
-        gameboard = new Gameboard();
-        gameboard.setPreferredSize(new Dimension(650, 600));
+        gameboard = new GameBoard();
+        gameboard.setPreferredSize(new Dimension(512, 576));
+
+        InitPieces whitePieces = new InitPieces("White");
+        whitePieces.setPreferredSize(new Dimension(64,64*TOTAL_PIECES));
+
+        InitPieces blackPieces = new InitPieces("Black");
+        blackPieces.setPreferredSize(new Dimension(64, 64*TOTAL_PIECES));
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
         contentPane.setBackground(Color.decode("#A9814E"));
 
-        whitePiecesStart = new JLabel();
-        whitePiecesStart.setText("WHITE PIECES");
-        whitePiecesStart.setHorizontalAlignment(JLabel.CENTER);
-        whitePiecesStart.setBackground(Color.WHITE);
-        whitePiecesStart.setOpaque(true);
-        contentPane.add(whitePiecesStart, BorderLayout.WEST);
-
         contentPane.add(gameboard, BorderLayout.CENTER);
-
-        blackPiecesStart = new JLabel();
-        blackPiecesStart.setText("BLACK PIECES");
-        blackPiecesStart.setHorizontalAlignment(JLabel.CENTER);
-        blackPiecesStart.setBackground(Color.GRAY);
-        blackPiecesStart.setOpaque(true);
-        contentPane.add(blackPiecesStart, BorderLayout.EAST);
-
-
-        //contentPane.add(gameStatusBar, BorderLayout.SOUTH);
-
+        contentPane.add(whitePieces, BorderLayout.WEST);
+        contentPane.add(blackPieces, BorderLayout.EAST);
     }
 
-    class Gameboard extends JPanel {
+    class InitPieces extends JPanel{
+        JLabel[] piecesList = new JLabel[TOTAL_PIECES];
 
-        JLabel gameboardBg = new JLabel();
+        InitPieces(String color){
+            setBackground(null);
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        Gameboard() {
+            for(int i = 0; i < TOTAL_PIECES; i++){
+                piecesList[i] = new JLabel();
+                piecesList[i].setHorizontalAlignment(JLabel.CENTER);
+                piecesList[i].setHorizontalAlignment(JLabel.CENTER);
+                piecesList[i].setIcon(new ImageIcon(PATH + color + ".png"));
+                int finalI = i;
+                piecesList[i].addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if(state){
+                            if(piecesList[finalI].getIcon().toString().equalsIgnoreCase(PATH + color + "_Selected.png")){
+                                piecesList[finalI].setIcon(new ImageIcon(PATH + color + ".png"));
+                                state = false;
+                            }
+                        }else{
+                            piecesList[finalI].setIcon(new ImageIcon(PATH + color + "_Selected.png"));
+                            state = true;
+                        }
+                    }
+                });
+                add(piecesList[i]);
+            }
+        }
+    }
+
+    class GameBoard extends JPanel {
+        JLabel gameBoardBg = new JLabel();
+
+        GameBoard() {
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    System.out.println("Hice click en: (" + e.getX() + ", " + e.getY() + ")");
+                    int rowSelected = e.getY() / CELL_SIZE;
+                    int colSelected = e.getX() / CELL_SIZE;
+
+                    if(state){
+                        System.out.println("Deberia colocar una ficha en esta casilla: (" + rowSelected + ", " + colSelected + ")");
+                    }else{
+                        System.out.println("No hay ficha seleccionada");
+                    }
                 }
             });
 
-            gameboardBg.setIcon(new ImageIcon(System.getProperty("user.dir") + "\\src\\assets\\img\\GameBoard_S.png"));
-            gameboardBg.setOpaque(true);
-            gameboardBg.setBackground(null);
+            gameBoardBg.setIcon(new ImageIcon(System.getProperty("user.dir") + "\\src\\assets\\img\\GameBoard_S.png"));
+            gameBoardBg.setOpaque(true);
+            gameBoardBg.setBackground(null);
             setBackground(Color.decode("#A9814E"));
             setLayout(new BorderLayout());
-            gameboardBg.setHorizontalAlignment(JLabel.CENTER);
-            gameboardBg.setVerticalAlignment(JLabel.CENTER);
-            add(gameboardBg, BorderLayout.CENTER);
+
+            gameBoardBg.setHorizontalAlignment(JLabel.CENTER);
+            gameBoardBg.setVerticalAlignment(JLabel.CENTER);
+            add(gameBoardBg, BorderLayout.CENTER);
+
+
+
+
             gameStatusBar = new JLabel();
             gameStatusBar.setText("STATUS BAR");
             gameStatusBar.setBackground(Color.CYAN);
             gameStatusBar.setOpaque(true);
             gameStatusBar.setHorizontalAlignment(JLabel.CENTER);
+            gameStatusBar.setVerticalAlignment(JLabel.CENTER);
             add(gameStatusBar, BorderLayout.SOUTH);
+
         }
     }
 }
