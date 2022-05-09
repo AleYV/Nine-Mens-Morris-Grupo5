@@ -1,7 +1,7 @@
 package gui;
 
 import controller.NineMensMorrisGame;
-import controller.NineMensMorrisGame.Celdas;
+import controller.NineMensMorrisGame.Cells;
 
 import javax.swing.*;
 import java.awt.*;

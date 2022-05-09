@@ -4,15 +4,15 @@ public class NineMensMorrisGame {
     protected static final int COLUMNS = 7;
     protected static final int ROWS = 7;
 
-    public enum Celdas{
+    public enum Cells{
         EMPTY, WHITE, BLACK, DISABLED
     }
 
-    protected Celdas[][]tablero;
+    protected Cells[][]table;
     protected char turn;
 
     public NineMensMorrisGame(){
-        tablero = new Celdas[ROWS][COLUMNS];
+        table = new Cells[ROWS][COLUMNS];
         initGame();
     }
 
@@ -21,10 +21,10 @@ public class NineMensMorrisGame {
             for(int j=-3;j<3;j++){
                 if(i!=0 &&  j!=0)
                     if(Math.abs(i)==Math.abs(j))
-                        tablero[i+3][j+3] = Celdas.EMPTY;
-                if(i==0 && j!=0) tablero[i+3][j+3] = Celdas.EMPTY;
-                if(i!=0 && j==0) tablero[i+3][j+3] = Celdas.EMPTY;
-                else tablero[i+3][j+3] = Celdas.DISABLED;
+                        table[i+3][j+3] = Cells.EMPTY;
+                if(i==0 && j!=0) table[i+3][j+3] = Cells.EMPTY;
+                if(i!=0 && j==0) table[i+3][j+3] = Cells.EMPTY;
+                else table[i+3][j+3] = Cells.DISABLED;
             }
         }
     }
