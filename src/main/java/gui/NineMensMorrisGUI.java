@@ -4,6 +4,7 @@ import controller.NineMensMorrisGame;
 import controller.NineMensMorrisGame.Cells;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -45,8 +46,8 @@ public class NineMensMorrisGUI extends JFrame {
         InitPieces blackPieces = new InitPieces("Black");
         blackPieces.setPreferredSize(new Dimension(64, 64*TOTAL_PIECES));
 
-        InitTurnBar barStatus = new InitTurnBar();
-        barStatus.setPreferredSize(new Dimension(512, 64));
+        TurnBar barStatus = new TurnBar();
+        barStatus.setPreferredSize(new Dimension(512, 90));
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
@@ -122,17 +123,24 @@ public class NineMensMorrisGUI extends JFrame {
         }
     }
 
-    class InitTurnBar extends JPanel{
+    class TurnBar extends JPanel{
         JLabel gameStatusBar = new JLabel();
+        JLabel activePieceIcon = new JLabel();
 
-        InitTurnBar(){
-            setLayout(new BorderLayout());
-            gameStatusBar.setText("STATUS BAR");
-            gameStatusBar.setBackground(Color.decode("#A9814E"));
-            gameStatusBar.setOpaque(true);
+        TurnBar(){
+
+            setLayout(new FlowLayout());
+            setBackground(null);
+
+            activePieceIcon.setIcon(new ImageIcon(PATH +"White"+ ".png"));
+            activePieceIcon.setVerticalAlignment(JLabel.NORTH);
+            activePieceIcon.setHorizontalAlignment(JLabel.CENTER);
+            add(activePieceIcon, BorderLayout.WEST);
+
+            gameStatusBar.setText("TURN COLOR");
             gameStatusBar.setHorizontalAlignment(JLabel.CENTER);
             gameStatusBar.setVerticalAlignment(JLabel.CENTER);
-            add(gameStatusBar);
+            add(gameStatusBar, BorderLayout.CENTER);
         }
     }
 
