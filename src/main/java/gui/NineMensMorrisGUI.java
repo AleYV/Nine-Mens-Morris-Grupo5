@@ -10,15 +10,22 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class NineMensMorrisGUI extends JFrame {
-    public static final int CELL_SIZE = 77;
+    public static final int CELL_SIZE = 73;
     public static final int TOTAL_PIECES = 9;
+    public static final int HEIGHT_PADDING = 16;
     public static final String PATH = System.getProperty("user.dir") + "\\src\\assets\\img\\Piece_";
+    public static final String SELECTED = "_Selected.png";
 
-    private boolean state = false;
+    private boolean state = true;
+    private int indexW = 0;
+    private int indexB = 0;
 
-    private JLabel gameStatusBar;
+    private JLabel[] whitePieces;
+    private JLabel[] blackPieces;
 
     private GameBoard gameboard;
+    private TurnBar barStatus;
+    private JLabel activePieceIcon;
 
     private NineMensMorrisGame controller;
 
@@ -40,13 +47,15 @@ public class NineMensMorrisGUI extends JFrame {
         gameboard = new GameBoard();
         gameboard.setPreferredSize(new Dimension(512, 576));
 
-        InitPieces whitePieces = new InitPieces("White");
+        whitePieces = new JLabel[TOTAL_PIECES];
+        InitPieces whitePieces = new InitPieces("White",this.whitePieces);
         whitePieces.setPreferredSize(new Dimension(64,64*TOTAL_PIECES));
 
-        InitPieces blackPieces = new InitPieces("Black");
+        blackPieces = new JLabel[TOTAL_PIECES];
+        InitPieces blackPieces = new InitPieces("Black", this.blackPieces);
         blackPieces.setPreferredSize(new Dimension(64, 64*TOTAL_PIECES));
 
-        TurnBar barStatus = new TurnBar();
+        barStatus = new TurnBar();
         barStatus.setPreferredSize(new Dimension(512, 90));
 
         Container contentPane = getContentPane();
@@ -60,34 +69,24 @@ public class NineMensMorrisGUI extends JFrame {
     }
 
     class InitPieces extends JPanel{
-        JLabel[] piecesList = new JLabel[TOTAL_PIECES];
 
-        InitPieces(String color){
+        JLabel[] piecesList;
+
+        InitPieces(String color, JLabel[] piecesList){
+            this.piecesList = piecesList;
             setBackground(null);
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
             for(int i = 0; i < TOTAL_PIECES; i++){
-                piecesList[i] = new JLabel();
-                piecesList[i].setHorizontalAlignment(JLabel.CENTER);
-                piecesList[i].setHorizontalAlignment(JLabel.CENTER);
-                piecesList[i].setIcon(new ImageIcon(PATH + color + ".png"));
-                int finalI = i;
-                piecesList[i].addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        if(state){
-                            if(piecesList[finalI].getIcon().toString().equalsIgnoreCase(PATH + color + "_Selected.png")){
-                                piecesList[finalI].setIcon(new ImageIcon(PATH + color + ".png"));
-                                state = false;
-                            }
-                        }else{
-                            piecesList[finalI].setIcon(new ImageIcon(PATH + color + "_Selected.png"));
-                            state = true;
-                        }
-                    }
-                });
-                add(piecesList[i]);
+                this.piecesList[i] = new JLabel();
+                this.piecesList[i].setHorizontalAlignment(JLabel.CENTER);
+                this.piecesList[i].setIcon(new ImageIcon(PATH + color + ".png"));
+                this.piecesList[i].setDisabledIcon(new ImageIcon(PATH + "Null.png"));
+                add(this.piecesList[i]);
             }
+
+            if(color.charAt(0) == controller.getTurn())
+                this.piecesList[0].setIcon(new ImageIcon(PATH + color + SELECTED));
         }
     }
 
@@ -98,11 +97,45 @@ public class NineMensMorrisGUI extends JFrame {
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    int rowSelected = e.getY() / CELL_SIZE;
-                    int colSelected = e.getX() / CELL_SIZE;
+                    float rowSelected = (e.getY() - HEIGHT_PADDING) / (float)CELL_SIZE;
+                    float colSelected = (e.getX() - HEIGHT_PADDING) / (float)CELL_SIZE;
 
-                    if(state){
-                        System.out.println("Deberia colocar una ficha en esta casilla: (" + rowSelected + ", " + colSelected + ")");
+                    System.out.println("(x,y): (" + e.getX() + ", " + e.getY() + ")");
+                    System.out.println("Casilla: (" + colSelected + ", " + rowSelected + ")");
+
+                    int row = (int)rowSelected;
+                    int col = (int)colSelected;
+                    //INIT TABLE
+                    if(state && rowSelected >= 0 && colSelected >= 0){
+                        if(controller.getCell(row, col) == Cells.EMPTY) {
+                            System.out.println("Deberia colocar una ficha en esta casilla: (" + col + ", " + row + ")");
+
+                            if(controller.getTurn() == 'W' && indexW < TOTAL_PIECES && indexB < TOTAL_PIECES){
+                                whitePieces[indexW++].setEnabled(false);
+                                blackPieces[indexB].setIcon(new ImageIcon(PATH + "Black" + SELECTED));
+                                activePieceIcon.setIcon(new ImageIcon(PATH + "Black.png"));
+                                controller.setCell((int)rowSelected, (int)colSelected);
+                            }
+                            else if (indexB < TOTAL_PIECES && indexW < TOTAL_PIECES){
+                                blackPieces[indexB++].setEnabled(false);
+                                whitePieces[indexW].setIcon(new ImageIcon(PATH + "White" + SELECTED));
+                                activePieceIcon.setIcon(new ImageIcon(PATH + "White.png"));
+                                controller.setCell((int)rowSelected, (int)colSelected);
+                            }else{
+                                blackPieces[indexB].setEnabled(false);
+                                activePieceIcon.setIcon(new ImageIcon(PATH + "White.png"));
+                                controller.setCell((int)rowSelected, (int)colSelected);
+                            }
+
+                            //state = false;
+                        }
+                        else if(controller.getCell(row, col) == Cells.DISABLED)
+                            System.out.println("No puedo colocar la ficha en esta casilla: (" + col + ", "
+                                    + row + "), no es una posicion valida");
+                        else
+                            System.out.println("No puedo colocar la ficha en esta casilla: (" + col + ", "
+                                    + row + "), esta ocupada");
+
                     }else{
                         System.out.println("No hay ficha seleccionada");
                     }
@@ -111,28 +144,26 @@ public class NineMensMorrisGUI extends JFrame {
 
             gameBoardBg.setIcon(new ImageIcon(System.getProperty("user.dir") + "\\src\\assets\\img\\GameBoard_S.png"));
             gameBoardBg.setOpaque(true);
-            gameBoardBg.setBackground(null);
             setBackground(Color.decode("#A9814E"));
             setLayout(new BorderLayout());
 
             gameBoardBg.setHorizontalAlignment(JLabel.CENTER);
-            gameBoardBg.setVerticalAlignment(JLabel.CENTER);
-            add(gameBoardBg, BorderLayout.CENTER);
-
-
+            gameBoardBg.setBackground(null);
+            gameBoardBg.setBorder(new EmptyBorder(HEIGHT_PADDING,0,0,0));
+            add(gameBoardBg, BorderLayout.NORTH);
         }
     }
 
     class TurnBar extends JPanel{
         JLabel gameStatusBar = new JLabel();
-        JLabel activePieceIcon = new JLabel();
 
         TurnBar(){
-
             setLayout(new FlowLayout());
             setBackground(null);
 
-            activePieceIcon.setIcon(new ImageIcon(PATH +"White"+ ".png"));
+            activePieceIcon = new JLabel();
+            activePieceIcon.setIcon(new ImageIcon(PATH + "White.png"));
+
             activePieceIcon.setVerticalAlignment(JLabel.NORTH);
             activePieceIcon.setHorizontalAlignment(JLabel.CENTER);
             add(activePieceIcon, BorderLayout.WEST);
