@@ -45,6 +45,9 @@ public class NineMensMorrisGUI extends JFrame {
         InitPieces blackPieces = new InitPieces("Black");
         blackPieces.setPreferredSize(new Dimension(64, 64*TOTAL_PIECES));
 
+        InitTurnBar barStatus = new InitTurnBar();
+        barStatus.setPreferredSize(new Dimension(512, 64));
+
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
         contentPane.setBackground(Color.decode("#A9814E"));
@@ -52,6 +55,7 @@ public class NineMensMorrisGUI extends JFrame {
         contentPane.add(gameboard, BorderLayout.CENTER);
         contentPane.add(whitePieces, BorderLayout.WEST);
         contentPane.add(blackPieces, BorderLayout.EAST);
+        contentPane.add(barStatus, BorderLayout.SOUTH);
     }
 
     class InitPieces extends JPanel{
@@ -115,16 +119,22 @@ public class NineMensMorrisGUI extends JFrame {
             add(gameBoardBg, BorderLayout.CENTER);
 
 
+        }
+    }
 
+    class InitTurnBar extends JPanel{
+        JLabel gameStatusBar = new JLabel();
 
-            gameStatusBar = new JLabel();
+        InitTurnBar(){
+            setLayout(new BorderLayout());
             gameStatusBar.setText("STATUS BAR");
-            gameStatusBar.setBackground(Color.CYAN);
+            gameStatusBar.setBackground(Color.decode("#A9814E"));
             gameStatusBar.setOpaque(true);
             gameStatusBar.setHorizontalAlignment(JLabel.CENTER);
             gameStatusBar.setVerticalAlignment(JLabel.CENTER);
-            add(gameStatusBar, BorderLayout.SOUTH);
-
+            add(gameStatusBar);
         }
     }
+
+
 }
