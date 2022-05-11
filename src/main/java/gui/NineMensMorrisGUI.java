@@ -10,11 +10,15 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class NineMensMorrisGUI extends JFrame {
-    public static final int CELL_SIZE = 73;
+    public static final int CELL_SIZE = 72;
     public static final int TOTAL_PIECES = 9;
     public static final int HEIGHT_PADDING = 16;
-    public static final String PATH = System.getProperty("user.dir") + "\\src\\assets\\img\\Piece_";
-    public static final String SELECTED = "_Selected.png";
+    private static final String PATH = System.getProperty("user.dir") + "\\src\\assets\\img\\Piece_";
+    private static final String SELECTED = "_Selected.png";
+    private static final ImageIcon WHITEICON = new ImageIcon(PATH + "White.png");
+    private static final ImageIcon WHITESELECTEDICON = new ImageIcon(PATH + "White" + SELECTED);
+    private static final ImageIcon BLACKICON = new ImageIcon(PATH + "Black.png");
+    private static final ImageIcon BLACKSELECTEDICON = new ImageIcon(PATH + "Black" + SELECTED);
 
     private boolean state = true;
     private int indexW = 0;
@@ -24,7 +28,6 @@ public class NineMensMorrisGUI extends JFrame {
     private JLabel[] blackPieces;
 
     private GameBoard gameboard;
-    private TurnBar barStatus;
     private JLabel activePieceIcon;
 
     private NineMensMorrisGame controller;
@@ -45,7 +48,7 @@ public class NineMensMorrisGUI extends JFrame {
 
     private void setContentPane() {
         gameboard = new GameBoard();
-        gameboard.setPreferredSize(new Dimension(512, 576));
+        gameboard.setPreferredSize(new Dimension(504, 600));
 
         whitePieces = new JLabel[TOTAL_PIECES];
         InitPieces whitePieces = new InitPieces("White",this.whitePieces);
@@ -55,9 +58,6 @@ public class NineMensMorrisGUI extends JFrame {
         InitPieces blackPieces = new InitPieces("Black", this.blackPieces);
         blackPieces.setPreferredSize(new Dimension(64, 64*TOTAL_PIECES));
 
-        barStatus = new TurnBar();
-        barStatus.setPreferredSize(new Dimension(512, 90));
-
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
         contentPane.setBackground(Color.decode("#A9814E"));
@@ -65,11 +65,9 @@ public class NineMensMorrisGUI extends JFrame {
         contentPane.add(gameboard, BorderLayout.CENTER);
         contentPane.add(whitePieces, BorderLayout.WEST);
         contentPane.add(blackPieces, BorderLayout.EAST);
-        contentPane.add(barStatus, BorderLayout.SOUTH);
     }
 
     class InitPieces extends JPanel{
-
         JLabel[] piecesList;
 
         InitPieces(String color, JLabel[] piecesList){
@@ -92,65 +90,99 @@ public class NineMensMorrisGUI extends JFrame {
 
     class GameBoard extends JPanel {
         JLabel gameBoardBg = new JLabel();
+        JLabel[][] cellsAvailable = new JLabel[7][7];
 
         GameBoard() {
-            addMouseListener(new MouseAdapter() {
+            setBackground(Color.decode("#A9814E"));
+            setLayout(new BorderLayout());
+
+            for (int i=-3; i<=3; i++){
+                for(int j=-3;j<=3;j++){
+                    if (i==0 && j==0) continue;
+
+                    if(i == 0) {
+                        initCellsOnBoard(3, (j + 3));
+                        continue;
+                    }
+                    if(j == 0) {
+                        initCellsOnBoard((i + 3), 3);
+                        continue;
+                    }
+                    if(Math.abs(i) == Math.abs(j))
+                        initCellsOnBoard((i + 3), (j + 3));
+                }
+            }
+
+            TurnBar barStatus = new TurnBar();
+            barStatus.setPreferredSize(new Dimension(512, 90));
+            add(barStatus);
+
+            gameBoardBg.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    float rowSelected = (e.getY() - HEIGHT_PADDING) / (float)CELL_SIZE;
-                    float colSelected = (e.getX() - HEIGHT_PADDING) / (float)CELL_SIZE;
+                    int rowSelected = (e.getY() - HEIGHT_PADDING) / CELL_SIZE;
+                    int colSelected = (e.getX()) / CELL_SIZE;
 
                     System.out.println("(x,y): (" + e.getX() + ", " + e.getY() + ")");
                     System.out.println("Casilla: (" + colSelected + ", " + rowSelected + ")");
 
-                    int row = (int)rowSelected;
-                    int col = (int)colSelected;
+                    if(e.getY() <= HEIGHT_PADDING){
+                        System.out.println("No estoy dentro");
+                        return;
+                    }
+
                     //INIT TABLE
-                    if(state && rowSelected >= 0 && colSelected >= 0){
-                        if(controller.getCell(row, col) == Cells.EMPTY) {
-                            System.out.println("Deberia colocar una ficha en esta casilla: (" + col + ", " + row + ")");
+                    if(state){
+                        if(controller.getCell(rowSelected, colSelected) == Cells.EMPTY) {
+                            System.out.println("Deberia colocar una ficha en esta casilla: (" + colSelected + ", " + rowSelected + ")");
 
                             if(controller.getTurn() == 'W' && indexW < TOTAL_PIECES && indexB < TOTAL_PIECES){
                                 whitePieces[indexW++].setEnabled(false);
-                                blackPieces[indexB].setIcon(new ImageIcon(PATH + "Black" + SELECTED));
-                                activePieceIcon.setIcon(new ImageIcon(PATH + "Black.png"));
-                                controller.setCell((int)rowSelected, (int)colSelected);
+                                blackPieces[indexB].setIcon(BLACKSELECTEDICON);
+                                activePieceIcon.setIcon(BLACKICON);
+                                controller.setCell(rowSelected, colSelected);
+                                cellsAvailable[colSelected][rowSelected].setIcon(WHITEICON);
                             }
                             else if (indexB < TOTAL_PIECES && indexW < TOTAL_PIECES){
                                 blackPieces[indexB++].setEnabled(false);
-                                whitePieces[indexW].setIcon(new ImageIcon(PATH + "White" + SELECTED));
-                                activePieceIcon.setIcon(new ImageIcon(PATH + "White.png"));
-                                controller.setCell((int)rowSelected, (int)colSelected);
+                                whitePieces[indexW].setIcon(WHITESELECTEDICON);
+                                activePieceIcon.setIcon(WHITEICON);
+                                controller.setCell(rowSelected, colSelected);
+                                cellsAvailable[colSelected][rowSelected].setIcon(BLACKICON);
                             }else{
                                 blackPieces[indexB].setEnabled(false);
-                                activePieceIcon.setIcon(new ImageIcon(PATH + "White.png"));
-                                controller.setCell((int)rowSelected, (int)colSelected);
+                                activePieceIcon.setIcon(WHITEICON);
+                                controller.setCell(rowSelected, colSelected);
+                                cellsAvailable[colSelected][rowSelected].setIcon(new ImageIcon(PATH + "Black.png"));
+                                state = false;
                             }
-
-                            //state = false;
                         }
-                        else if(controller.getCell(row, col) == Cells.DISABLED)
-                            System.out.println("No puedo colocar la ficha en esta casilla: (" + col + ", "
-                                    + row + "), no es una posicion valida");
+                        else if(controller.getCell(rowSelected, colSelected) == Cells.DISABLED)
+                            System.out.println("No puedo colocar la ficha en esta casilla: (" + colSelected + ", "
+                                    + rowSelected + "), no es una posicion valida");
                         else
-                            System.out.println("No puedo colocar la ficha en esta casilla: (" + col + ", "
-                                    + row + "), esta ocupada");
-
+                            System.out.println("No puedo colocar la ficha en esta casilla: (" + colSelected + ", "
+                                    + rowSelected + "), esta ocupada");
                     }else{
-                        System.out.println("No hay ficha seleccionada");
+                        System.out.println("Culmino la fase de inicio.");
                     }
                 }
             });
 
-            gameBoardBg.setIcon(new ImageIcon(System.getProperty("user.dir") + "\\src\\assets\\img\\GameBoard_S.png"));
+            gameBoardBg.setIcon(new ImageIcon(System.getProperty("user.dir") + "\\src\\assets\\img\\GameBoard.png"));
             gameBoardBg.setOpaque(true);
-            setBackground(Color.decode("#A9814E"));
-            setLayout(new BorderLayout());
 
             gameBoardBg.setHorizontalAlignment(JLabel.CENTER);
             gameBoardBg.setBackground(null);
             gameBoardBg.setBorder(new EmptyBorder(HEIGHT_PADDING,0,0,0));
             add(gameBoardBg, BorderLayout.NORTH);
+        }
+
+        private void initCellsOnBoard(int i, int j){
+            cellsAvailable[i][j] = new JLabel();
+            cellsAvailable[i][j].setBounds(CELL_SIZE*i, (CELL_SIZE*j + HEIGHT_PADDING), CELL_SIZE, CELL_SIZE);
+            cellsAvailable[i][j].setHorizontalAlignment(JLabel.CENTER);
+            add(cellsAvailable[i][j]);
         }
     }
 
@@ -162,7 +194,7 @@ public class NineMensMorrisGUI extends JFrame {
             setBackground(null);
 
             activePieceIcon = new JLabel();
-            activePieceIcon.setIcon(new ImageIcon(PATH + "White.png"));
+            activePieceIcon.setIcon(WHITEICON);
 
             activePieceIcon.setVerticalAlignment(JLabel.NORTH);
             activePieceIcon.setHorizontalAlignment(JLabel.CENTER);
@@ -174,6 +206,4 @@ public class NineMensMorrisGUI extends JFrame {
             add(gameStatusBar, BorderLayout.CENTER);
         }
     }
-
-
 }
