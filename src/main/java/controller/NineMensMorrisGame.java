@@ -9,7 +9,7 @@ public class NineMensMorrisGame {
     }
 
     protected Cells[][]table;
-    protected char turn;
+    protected char turn = 'W';
 
     public NineMensMorrisGame(){
         table = new Cells[ROWS][COLUMNS];
@@ -32,14 +32,7 @@ public class NineMensMorrisGame {
     public char getTurn(){
         return turn;
     }
-    public void setCell(int row, int column, Cells cell){
-        if (row >= 0 && row < ROWS && column >= 0 && column < COLUMNS){
-            if (turn == 'W') table[row][column] = Cells.WHITE;
-            else table[row][column] = Cells.BLACK;
-            if(turn == 'W') turn = 'B';
-            else turn = 'W';
-        }
-    }
+
     public int getColumns(){
         return COLUMNS;
     }
@@ -51,5 +44,14 @@ public class NineMensMorrisGame {
             return table[row][column];
         }
         return null;
+    }
+
+    public void setCell(int row, int column){
+        if (row >= 0 && row < ROWS && column >= 0 && column < COLUMNS){
+            if (turn == 'W') table[row][column] = Cells.WHITE;
+            else table[row][column] = Cells.BLACK;
+            if(turn == 'W') turn = 'B';
+            else turn = 'W';
+        }
     }
 }
