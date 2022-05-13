@@ -67,6 +67,7 @@ public class NineMensMorrisGUI extends JFrame {
         contentPane.add(blackPieces, BorderLayout.EAST);
     }
 
+    //Muestra los dos paneles con las piezas blancas y negras a los lados
     class InitPieces extends JPanel{
         JLabel[] piecesList;
 
@@ -123,40 +124,49 @@ public class NineMensMorrisGUI extends JFrame {
                     int rowSelected = (e.getY() - HEIGHT_PADDING) / CELL_SIZE;
                     int colSelected = (e.getX()) / CELL_SIZE;
 
+                    //Imprime la posición donde se hace click
                     System.out.println("(x,y): (" + e.getX() + ", " + e.getY() + ")");
                     System.out.println("Casilla: (" + colSelected + ", " + rowSelected + ")");
 
+                    //Se asegura que se esta clickeando dentro del tablero
                     if(e.getY() <= HEIGHT_PADDING){
                         System.out.println("No estoy dentro");
                         return;
                     }
 
-                    //INIT TABLE
+                    //Comprueba si la fase de colocar fichas todavía no ha terminado
                     if(state){
+                        //Si la casilla seleccionada esta vacía, se coloca la ficha correspondiente del turno
                         if(controller.getCell(rowSelected, colSelected) == Cells.EMPTY) {
                             System.out.println("Deberia colocar una ficha en esta casilla: (" + colSelected + ", " + rowSelected + ")");
 
+                            // Si el turno es de las fichas blancas, y aún hay fichas en ambos lados, coloca la ficha en la casilla seleccionada
+                            // y pasa turno
                             if(controller.getTurn() == 'W' && indexW < TOTAL_PIECES && indexB < TOTAL_PIECES){
                                 whitePieces[indexW++].setEnabled(false);
                                 blackPieces[indexB].setIcon(BLACKSELECTEDICON);
                                 activePieceIcon.setIcon(BLACKICON);
-                                controller.setCell(rowSelected, colSelected);
                                 cellsAvailable[colSelected][rowSelected].setIcon(WHITEICON);
                             }
+                            //Sino, comprueba si hay fichas en ambos lados y coloca la ficha negra en la casilla seleccionada
+                            //y pasa turno
                             else if (indexB < TOTAL_PIECES && indexW < TOTAL_PIECES){
                                 blackPieces[indexB++].setEnabled(false);
                                 whitePieces[indexW].setIcon(WHITESELECTEDICON);
                                 activePieceIcon.setIcon(WHITEICON);
-                                controller.setCell(rowSelected, colSelected);
                                 cellsAvailable[colSelected][rowSelected].setIcon(BLACKICON);
-                            }else{
+                            }
+                            //Cuando solo queda unicamente una ficha, coloca la ficha negra en la casilla seleccionada
+                            //y se termina la fase de colocación
+                            else{
                                 blackPieces[indexB].setEnabled(false);
                                 activePieceIcon.setIcon(WHITEICON);
-                                controller.setCell(rowSelected, colSelected);
                                 cellsAvailable[colSelected][rowSelected].setIcon(new ImageIcon(PATH + "Black.png"));
                                 state = false;
                             }
+                            controller.setCell(rowSelected, colSelected);
                         }
+                        //Si la celda seleccionada no pertenece a una casilla válida, no se hace nada
                         else if(controller.getCell(rowSelected, colSelected) == Cells.DISABLED)
                             System.out.println("No puedo colocar la ficha en esta casilla: (" + colSelected + ", "
                                     + rowSelected + "), no es una posicion valida");
@@ -186,6 +196,7 @@ public class NineMensMorrisGUI extends JFrame {
         }
     }
 
+    //Muestra el panel con el turno y su color de ficha correspondiente al turno
     class TurnBar extends JPanel{
         JLabel gameStatusBar = new JLabel();
 
