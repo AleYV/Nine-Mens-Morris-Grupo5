@@ -7,9 +7,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class NineMensMorrisGameTest implements TestExecutionListener {
 
+    NineMensMorrisGame game = new NineMensMorrisGame();
+
     @Test
-    void testgetCell(){
-        NineMensMorrisGame game = new NineMensMorrisGame();
+    void testManual(){
         System.out.println("VERIFICACIÓN MANUAL");
         System.out.println("Verificar que la celda este en el rango.");
         assertNull( game.getCell(-3,-5));
@@ -17,9 +18,15 @@ class NineMensMorrisGameTest implements TestExecutionListener {
         System.out.println("Verificar que la celda este vacia antes de iniciar el juego.");
         assertEquals(Cells.EMPTY,game.getCell(1,1));
 
+        System.out.println("Verificar que la celda este deshabilitada antes de iniciar el juego.");
+        assertEquals(Cells.DISABLED,game.getCell(3,3));
+
         System.out.println("Verificar que el primer turno sea de las fichas blancas\n");
         assertEquals('W', game.getTurn());
+    }
 
+    @Test
+    void testAutomatic(){
         System.out.println("VERIFICACIÓN AUTOMATICA");
         System.out.println("Verificación del tablero");
         for(int i=0; i<game.getRows();i++){
