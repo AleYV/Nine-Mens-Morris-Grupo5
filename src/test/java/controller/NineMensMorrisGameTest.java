@@ -13,5 +13,8 @@ class NineMensMorrisGameTest implements TestExecutionListener {
 
         System.out.println("Verificar que la celda este en el rango.");
         assertEquals(null, game.getCell(-3,-5));
+
+        System.out.println("Verificar que el primer turno sea de las fichas blancas");
+        assertEquals('W', game.getTurn());
     }
 }
