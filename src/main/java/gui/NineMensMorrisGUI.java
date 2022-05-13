@@ -13,7 +13,7 @@ public class NineMensMorrisGUI extends JFrame {
     public static final int CELL_SIZE = 72;
     public static final int TOTAL_PIECES = 9;
     public static final int HEIGHT_PADDING = 16;
-    private static final String PATH = System.getProperty("user.dir") + "\\src\\assets\\img\\Piece_";
+    private static final String PATH = System.getProperty("user.dir") + "\\src\\main\\resources\\img\\Piece_";
     private static final String SELECTED = "_Selected.png";
     private static final ImageIcon WHITEICON = new ImageIcon(PATH + "White.png");
     private static final ImageIcon WHITESELECTEDICON = new ImageIcon(PATH + "White" + SELECTED);
@@ -179,7 +179,7 @@ public class NineMensMorrisGUI extends JFrame {
                 }
             });
 
-            gameBoardBg.setIcon(new ImageIcon(System.getProperty("user.dir") + "\\src\\assets\\img\\GameBoard.png"));
+            gameBoardBg.setIcon(new ImageIcon(System.getProperty("user.dir") + "\\src\\main\\resources\\img\\GameBoard.png"));
             gameBoardBg.setOpaque(true);
 
             gameBoardBg.setHorizontalAlignment(JLabel.CENTER);

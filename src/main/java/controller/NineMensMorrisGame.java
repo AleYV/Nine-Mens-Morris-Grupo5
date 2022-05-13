@@ -29,17 +29,6 @@ public class NineMensMorrisGame {
                 else table[i+3][j+3] = Cells.DISABLED;
             }
         }
-//      Imprimir el tablero
-//        for(int i=0; i<7;i++){
-//            for(int j=0; j<7;j++){
-//                if(table[i][j] == Cells.EMPTY){
-//                    System.out.print("O");
-//                }else if(table[i][j] == Cells.DISABLED){
-//                    System.out.print("-");
-//                }else System.out.print('?');
-//            }
-//            System.out.println("");
-//        }
     }
 
     //Obtener el turno
