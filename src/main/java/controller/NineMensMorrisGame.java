@@ -24,8 +24,8 @@ public class NineMensMorrisGame {
                 if (i==0 && j==0) table[i+3][j+3] = Cells.DISABLED;
                 else if(Math.abs(i)==Math.abs(j))
                     table[i+3][j+3] = Cells.EMPTY;
-                else if(i==0 && j!=0) table[i+3][j+3] = Cells.EMPTY;
-                else if(i!=0 && j==0) table[i+3][j+3] = Cells.EMPTY;
+                else if(i==0) table[i+3][j+3] = Cells.EMPTY;
+                else if(j==0) table[i+3][j+3] = Cells.EMPTY;
                 else table[i+3][j+3] = Cells.DISABLED;
             }
         }
