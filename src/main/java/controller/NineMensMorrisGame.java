@@ -1,15 +1,15 @@
 package controller;
 
 public class NineMensMorrisGame {
-    protected static final int COLUMNS = 7;
-    protected static final int ROWS = 7;
+    private static final int COLUMNS = 7;
+    private static final int ROWS = 7;
 
     public enum Cells{
         EMPTY, WHITE, BLACK, DISABLED
     }
 
-    protected Cells[][]table;
-    protected char turn = 'W';
+    private Cells[][]table;
+    private char turn = 'W';
 
     // Crear el cuadrante donde se desarrollara el tablero
     public NineMensMorrisGame(){
@@ -17,8 +17,8 @@ public class NineMensMorrisGame {
         initGame();
     }
 
-    //Muestra la lógica por medio de un tablero vacío
-    private void initGame(){
+    //Que posiciones de la matriz son válidas para asignarle casillas del juego al tablero
+    private boolean initGame(){
         for (int i=-3; i<=3; i++){
             for(int j=-3;j<=3;j++){
                 if (i==0 && j==0) table[i+3][j+3] = Cells.DISABLED;
@@ -29,11 +29,16 @@ public class NineMensMorrisGame {
                 else table[i+3][j+3] = Cells.DISABLED;
             }
         }
+        return true;
     }
 
     //Obtener el turno
     public char getTurn(){
         return turn;
+    }
+
+    public void setTurn(char turn) {
+        this.turn = turn;
     }
 
     //Obtener columnas
@@ -45,6 +50,12 @@ public class NineMensMorrisGame {
     public int getRows(){
         return ROWS;
     }
+
+
+    public Cells[][] getTable() {
+        return table;
+    }
+
 
     //Obtener la celda verificando que este en el rango
     public Cells getCell(int row, int column){
