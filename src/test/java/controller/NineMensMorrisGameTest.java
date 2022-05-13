@@ -20,7 +20,8 @@ class NineMensMorrisGameTest implements TestExecutionListener {
         System.out.println("Verificar que el primer turno sea de las fichas blancas\n");
         assertEquals('W', game.getTurn());
 
-        System.out.println("Verificación automática del tablero");
+        System.out.println("VERIFICACIÓN AUTOMATICA");
+        System.out.println("Verificación del tablero");
         for(int i=0; i<game.getRows();i++){
             for(int j=0; j<game.getColumns();j++){
                 if (i==3 && j==3) assertEquals(Cells.DISABLED,game.getCell(i,j));
