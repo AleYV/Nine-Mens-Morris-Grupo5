@@ -2,6 +2,7 @@ package gui;
 
 import controller.NineMensMorrisGame;
 import controller.NineMensMorrisGame.Cells;
+import controller.NineMensMorrisGame.GameState;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -9,25 +10,44 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+
 public class NineMensMorrisGUI extends JFrame {
+
+    /*
+     * TODO: CAMBIOS IMPORTANTES
+     *  Se hace variable local a gameboard puesto que se solo se va a utilizar una vez
+     *  Se agregan las instanciaciones de los iconos para las fichas blancas y negras cuando forman un molino
+     *  Se agrega dos enteros para que almacenar las posiciones anteriores para la funcion makeMove()
+     *  Se simplifico la lógica de la fase de colocación de fichas
+     *  Se agrego la función updateTurnBar() a TurnBar para actualizar el icono del turno
+     *  Se agrego la lógica de visualización del movimiento de fichas por turnos al igual que cuando se forma un molino
+     *  La lógica del molino depende de la funcion moveMakeMill de la clase NineMensMorrisGame (solo DEBUG)
+     *  El juego se detiene luego de 10 jugadas.
+     * */
+
     public static final int CELL_SIZE = 72;
     public static final int TOTAL_PIECES = 9;
     public static final int HEIGHT_PADDING = 16;
     private static final String PATH = System.getProperty("user.dir") + "\\src\\main\\resources\\img\\Piece_";
     private static final String SELECTED = "_Selected.png";
+    private static final String MILL = "_Mill.png";
     private static final ImageIcon WHITEICON = new ImageIcon(PATH + "White.png");
     private static final ImageIcon WHITESELECTEDICON = new ImageIcon(PATH + "White" + SELECTED);
     private static final ImageIcon BLACKICON = new ImageIcon(PATH + "Black.png");
     private static final ImageIcon BLACKSELECTEDICON = new ImageIcon(PATH + "Black" + SELECTED);
+    private static final ImageIcon WHITEMILLICON = new ImageIcon(PATH + "White" + MILL);
+    private static final ImageIcon BLACKMILLICON = new ImageIcon(PATH + "Black" + MILL);
 
-    private boolean state = true;
+    private boolean selected = false;
     private int indexW = 0;
     private int indexB = 0;
+    private int autoMill = 0;
+    private int prevPositionX = 0;
+    private int prevPositionY = 0;
 
     private JLabel[] whitePieces;
     private JLabel[] blackPieces;
 
-    private GameBoard gameboard;
     private JLabel activePieceIcon;
 
     private NineMensMorrisGame controller;
@@ -47,11 +67,12 @@ public class NineMensMorrisGUI extends JFrame {
     }
 
     private void setContentPane() {
-        gameboard = new GameBoard();
+        GameBoard gameboard = new GameBoard();
         gameboard.setPreferredSize(new Dimension(504, 600));
 
         whitePieces = new JLabel[TOTAL_PIECES];
         InitPieces whitePieces = new InitPieces("White",this.whitePieces);
+        whitePieces.piecesList[0].setIcon(WHITESELECTEDICON);
         whitePieces.setPreferredSize(new Dimension(64,64*TOTAL_PIECES));
 
         blackPieces = new JLabel[TOTAL_PIECES];
@@ -70,7 +91,6 @@ public class NineMensMorrisGUI extends JFrame {
     //Muestra los dos paneles con las piezas blancas y negras a los lados
     class InitPieces extends JPanel{
         JLabel[] piecesList;
-
         InitPieces(String color, JLabel[] piecesList){
             this.piecesList = piecesList;
             setBackground(null);
@@ -83,9 +103,6 @@ public class NineMensMorrisGUI extends JFrame {
                 this.piecesList[i].setDisabledIcon(new ImageIcon(PATH + "Null.png"));
                 add(this.piecesList[i]);
             }
-
-            if(color.charAt(0) == controller.getTurn())
-                this.piecesList[0].setIcon(new ImageIcon(PATH + color + SELECTED));
         }
     }
 
@@ -97,8 +114,8 @@ public class NineMensMorrisGUI extends JFrame {
             setBackground(Color.decode("#A9814E"));
             setLayout(new BorderLayout());
 
-            for (int i=-3; i<=3; i++){
-                for(int j=-3;j<=3;j++){
+            for (int i = -3; i <= 3; i++){
+                for(int j = -3; j <= 3; j++){
                     if (i==0 && j==0) continue;
 
                     if(i == 0) {
@@ -121,8 +138,9 @@ public class NineMensMorrisGUI extends JFrame {
             gameBoardBg.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    int rowSelected = (e.getY() - HEIGHT_PADDING) / CELL_SIZE;
+                    System.out.println("TURNO ES: " + controller.getTurn());
                     int colSelected = (e.getX()) / CELL_SIZE;
+                    int rowSelected = (e.getY() - HEIGHT_PADDING) / CELL_SIZE;
 
                     //Imprime la posición donde se hace click
                     System.out.println("(x,y): (" + e.getX() + ", " + e.getY() + ")");
@@ -135,36 +153,35 @@ public class NineMensMorrisGUI extends JFrame {
                     }
 
                     //Comprueba si la fase de colocar fichas todavía no ha terminado
-                    if(state){
+                    if(controller.getGameState() == GameState.INIT){
                         //Si la casilla seleccionada esta vacía, se coloca la ficha correspondiente del turno
                         if(controller.getCell(rowSelected, colSelected) == Cells.EMPTY) {
                             System.out.println("Deberia colocar una ficha en esta casilla: (" + colSelected + ", " + rowSelected + ")");
 
-                            // Si el turno es de las fichas blancas, y aún hay fichas en ambos lados, coloca la ficha en la casilla seleccionada
-                            // y pasa turno
-                            if(controller.getTurn() == 'W' && indexW < TOTAL_PIECES && indexB < TOTAL_PIECES){
+                            //Si el turno es de las fichas blancas, y aún quedan fichas negras, coloca la ficha
+                            //en la casilla seleccionada y pasa turno
+                            if(controller.getTurn()){
                                 whitePieces[indexW++].setEnabled(false);
-                                blackPieces[indexB].setIcon(BLACKSELECTEDICON);
-                                activePieceIcon.setIcon(BLACKICON);
+                                if(indexB < TOTAL_PIECES) blackPieces[indexB].setIcon(BLACKSELECTEDICON);
                                 cellsAvailable[colSelected][rowSelected].setIcon(WHITEICON);
                             }
-                            //Sino, comprueba si hay fichas en ambos lados y coloca la ficha negra en la casilla seleccionada
-                            //y pasa turno
-                            else if (indexB < TOTAL_PIECES && indexW < TOTAL_PIECES){
+                            //Si el turno es de las fichas negras, y aún quedan fichas blancas, coloca la ficha
+                            //en la casilla seleccionada y pasa turno
+                            else{
                                 blackPieces[indexB++].setEnabled(false);
-                                whitePieces[indexW].setIcon(WHITESELECTEDICON);
-                                activePieceIcon.setIcon(WHITEICON);
+                                if(indexW < TOTAL_PIECES) whitePieces[indexW].setIcon(WHITESELECTEDICON);
                                 cellsAvailable[colSelected][rowSelected].setIcon(BLACKICON);
                             }
-                            //Cuando solo queda unicamente una ficha, coloca la ficha negra en la casilla seleccionada
-                            //y se termina la fase de colocación
-                            else{
-                                blackPieces[indexB].setEnabled(false);
-                                activePieceIcon.setIcon(WHITEICON);
-                                cellsAvailable[colSelected][rowSelected].setIcon(new ImageIcon(PATH + "Black.png"));
-                                state = false;
-                            }
                             controller.setCell(rowSelected, colSelected);
+                            barStatus.updateTurnBar();
+
+                            //Si ambos jugadores ya colocaron sus fichas, se cambia el estado del juego, culminando
+                            //la fase de colocación
+                            if(indexW == TOTAL_PIECES && indexB == TOTAL_PIECES){
+                                indexB = indexW = 0;
+                                controller.setGameState(GameState.PLAYING);
+                                System.out.println("Culmino la fase de inicio.");
+                            }
                         }
                         //Si la celda seleccionada no pertenece a una casilla válida, no se hace nada
                         else if(controller.getCell(rowSelected, colSelected) == Cells.DISABLED)
@@ -173,8 +190,66 @@ public class NineMensMorrisGUI extends JFrame {
                         else
                             System.out.println("No puedo colocar la ficha en esta casilla: (" + colSelected + ", "
                                     + rowSelected + "), esta ocupada");
-                    }else{
-                        System.out.println("Culmino la fase de inicio.");
+                    }
+
+                    //Etapa de seleccion y movimiento de fichas
+                    if(controller.getGameState() == GameState.PLAYING){
+                        //Movimiento
+                        //Si hay una ficha seleccionada
+                        if(selected){
+                            //Y la celda seleccionada está vacía
+                            if(controller.getCell(rowSelected, colSelected) == Cells.EMPTY){
+                                //Se llama a la función del controlador para comprobar si es un movimiento válido
+                                if(controller.makeMove(prevPositionY, prevPositionX, rowSelected, colSelected)){
+                                    //Se libera la casilla donde estaba la ficha
+                                    cellsAvailable[prevPositionX][prevPositionY].setIcon(null);
+                                    //Y se coloca la ficha en la casilla seleccionada
+                                    if(controller.getTurn())
+                                        cellsAvailable[colSelected][rowSelected].setIcon(WHITEICON);
+                                    else
+                                        cellsAvailable[colSelected][rowSelected].setIcon(BLACKICON);
+
+                                    //Llama a la funcion moveMakeMill para saber si el movimiento realizado
+                                    //formó un molino y retorne las posiciones de la fichas que la conforman
+                                    String positions = controller.moveMakeMill();
+                                    if(!positions.isEmpty())
+                                        showMill(positions);
+                                    else if(autoMill++ == 10) {
+                                        showMill("003060");
+                                        controller.setTurn(false);
+                                        JOptionPane.showMessageDialog(getParent(), "DEBUG. Se auto formado el molino, juego terminado");
+                                        controller.setGameState(GameState.DRAW);
+                                    }
+
+                                    selected = !selected;
+                                    controller.setTurn(!controller.getTurn());
+                                    barStatus.updateTurnBar();
+                                }
+                            }
+                            //Si la ficha ya estaba seleccionada, se deselecciona y permite al jugador escoger otra
+                            else if(cellsAvailable[colSelected][rowSelected].getIcon().toString().contains(SELECTED)){
+                                if(controller.getTurn())
+                                    selectPiece(colSelected, rowSelected, "White");
+                                else
+                                    selectPiece(colSelected, rowSelected, "Black");
+                                prevPositionX = prevPositionY = -1;
+                            }
+                        }
+                        //Selección
+                        else{
+                            //Si es turno de las blancas y se escoge una ficha blanca, esta ficha se selecciona
+                            if(controller.getTurn() && controller.getCell(rowSelected, colSelected) == Cells.WHITE) {
+                                selectPiece(colSelected, rowSelected, "White");
+                                prevPositionX = colSelected;
+                                prevPositionY = rowSelected;
+                            }
+                            //Si es turno de las negras y se escoge una ficha negra, esta ficha se selecciona
+                            else if(!controller.getTurn() && controller.getCell(rowSelected, colSelected) == Cells.BLACK) {
+                                selectPiece(colSelected, rowSelected, "Black");
+                                prevPositionX = colSelected;
+                                prevPositionY = rowSelected;
+                            }
+                        }
                     }
                 }
             });
@@ -193,6 +268,38 @@ public class NineMensMorrisGUI extends JFrame {
             cellsAvailable[i][j].setBounds(CELL_SIZE*i, (CELL_SIZE*j + HEIGHT_PADDING), CELL_SIZE, CELL_SIZE);
             cellsAvailable[i][j].setHorizontalAlignment(JLabel.CENTER);
             add(cellsAvailable[i][j]);
+        }
+
+        private void selectPiece(int i, int j, String color){
+            if(selected){
+                if(cellsAvailable[i][j].getIcon().toString().contains(SELECTED)) {
+                    cellsAvailable[i][j].setIcon(new ImageIcon(PATH + color + ".png"));
+                    selected = !selected;
+                }
+            }else{
+                cellsAvailable[i][j].setIcon(new ImageIcon(PATH + color + SELECTED));
+                selected = !selected;
+            }
+        }
+
+        private void showMill(String positions){
+
+            int c0 = Character.getNumericValue(positions.charAt(0));
+            int c1 = Character.getNumericValue(positions.charAt(1));
+            int c2 = Character.getNumericValue(positions.charAt(2));
+            int c3 = Character.getNumericValue(positions.charAt(3));
+            int c4 = Character.getNumericValue(positions.charAt(4));
+            int c5 = Character.getNumericValue(positions.charAt(5));
+
+            if(controller.getTurn()) {
+                cellsAvailable[c0][c1].setIcon(WHITEMILLICON);
+                cellsAvailable[c2][c3].setIcon(WHITEMILLICON);
+                cellsAvailable[c4][c5].setIcon(WHITEMILLICON);
+            }else{
+                cellsAvailable[c0][c1].setIcon(BLACKMILLICON);
+                cellsAvailable[c2][c3].setIcon(BLACKMILLICON);
+                cellsAvailable[c4][c5].setIcon(BLACKMILLICON);
+            }
         }
     }
 
@@ -215,6 +322,13 @@ public class NineMensMorrisGUI extends JFrame {
             gameStatusBar.setHorizontalAlignment(JLabel.CENTER);
             gameStatusBar.setVerticalAlignment(JLabel.CENTER);
             add(gameStatusBar, BorderLayout.CENTER);
+        }
+
+        public void updateTurnBar(){
+            if(controller.getTurn())
+                activePieceIcon.setIcon(WHITEICON);
+            else
+                activePieceIcon.setIcon(BLACKICON);
         }
     }
 }
