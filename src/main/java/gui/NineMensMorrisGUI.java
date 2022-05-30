@@ -13,18 +13,6 @@ import java.awt.event.MouseEvent;
 
 public class NineMensMorrisGUI extends JFrame {
 
-    /*
-     * TODO: CAMBIOS IMPORTANTES
-     *  Se hace variable local a gameboard puesto que se solo se va a utilizar una vez
-     *  Se agregan las instanciaciones de los iconos para las fichas blancas y negras cuando forman un molino
-     *  Se agrega dos enteros para que almacenar las posiciones anteriores para la funcion makeMove()
-     *  Se simplifico la lógica de la fase de colocación de fichas
-     *  Se agrego la función updateTurnBar() a TurnBar para actualizar el icono del turno
-     *  Se agrego la lógica de visualización del movimiento de fichas por turnos al igual que cuando se forma un molino
-     *  La lógica del molino depende de la funcion moveMakeMill de la clase NineMensMorrisGame (solo DEBUG)
-     *  El juego se detiene luego de 10 jugadas.
-     * */
-
     public static final int CELL_SIZE = 72;
     public static final int TOTAL_PIECES = 9;
     public static final int HEIGHT_PADDING = 16;
@@ -200,39 +188,50 @@ public class NineMensMorrisGUI extends JFrame {
                             //Y la celda seleccionada está vacía
                             if(controller.getCell(rowSelected, colSelected) == Cells.EMPTY){
                                 //Se llama a la función del controlador para comprobar si es un movimiento válido
-                                if(controller.makeMove(prevPositionY, prevPositionX, rowSelected, colSelected)){
-                                    //Se libera la casilla donde estaba la ficha
-                                    cellsAvailable[prevPositionX][prevPositionY].setIcon(null);
-                                    //Y se coloca la ficha en la casilla seleccionada
-                                    if(controller.getTurn())
-                                        cellsAvailable[colSelected][rowSelected].setIcon(WHITEICON);
-                                    else
-                                        cellsAvailable[colSelected][rowSelected].setIcon(BLACKICON);
-
-                                    //Llama a la funcion moveMakeMill para saber si el movimiento realizado
-                                    //formó un molino y retorne las posiciones de la fichas que la conforman
-                                    String positions = controller.moveMakeMill();
-                                    if(!positions.isEmpty())
-                                        showMill(positions);
-                                    else if(autoMill++ == 10) {
-                                        showMill("003060");
-                                        controller.setTurn(false);
-                                        JOptionPane.showMessageDialog(getParent(), "DEBUG. Se auto formado el molino, juego terminado");
-                                        controller.setGameState(GameState.DRAW);
+                                if(controller.isNeighbour(prevPositionY, prevPositionX, rowSelected, colSelected)){
+                                    //Se llama a la función del controlador para comprobar si es un movimiento válido
+                                    if(controller.makeMove(prevPositionY, prevPositionX, rowSelected, colSelected)){
+                                        //Se libera la casilla donde estaba la ficha
+                                        cellsAvailable[prevPositionX][prevPositionY].setIcon(null);
+                                        //Y se coloca la ficha en la casilla seleccionada
+                                        if(controller.getTurn())
+                                            cellsAvailable[colSelected][rowSelected].setIcon(WHITEICON);
+                                        else
+                                            cellsAvailable[colSelected][rowSelected].setIcon(BLACKICON);
+/*
+                                        //Llama a la funcion moveMakeMill para saber si el movimiento realizado
+                                        //formó un molino y retorne las posiciones de la fichas que la conforman
+                                        String positions = controller.moveMakeMill();
+                                        if(!positions.isEmpty())
+                                            showMill(positions);
+                                        else if(autoMill++ == 10) {
+                                            showMill("003060");
+                                            controller.setTurn(false);
+                                            JOptionPane.showMessageDialog(getParent(), "DEBUG. Se auto formado el molino, juego terminado");
+                                            controller.setGameState(GameState.DRAW);
+                                        }
+*/
+                                        selected = !selected;
+                                        controller.setTurn(!controller.getTurn());
+                                        barStatus.updateTurnBar();
                                     }
-
-                                    selected = !selected;
-                                    controller.setTurn(!controller.getTurn());
-                                    barStatus.updateTurnBar();
+                                } else{
+                                    System.out.println("La casilla ("+rowSelected+","+colSelected+") no es su vecino");
                                 }
                             }
                             //Si la ficha ya estaba seleccionada, se deselecciona y permite al jugador escoger otra
-                            else if(cellsAvailable[colSelected][rowSelected].getIcon().toString().contains(SELECTED)){
-                                if(controller.getTurn())
-                                    selectPiece(colSelected, rowSelected, "White");
-                                else
-                                    selectPiece(colSelected, rowSelected, "Black");
-                                prevPositionX = prevPositionY = -1;
+                            else if(cellsAvailable[colSelected][rowSelected]!=null){
+                                if(controller.getCell(rowSelected, colSelected) == Cells.WHITE ||
+                                        controller.getCell(rowSelected, colSelected) == Cells.BLACK){
+                                    System.out.println("La casilla esta ocupada");
+                                }
+                                if(cellsAvailable[colSelected][rowSelected].getIcon().toString().contains(SELECTED)){
+                                    if(controller.getTurn())
+                                        selectPiece(colSelected, rowSelected, "White");
+                                    else
+                                        selectPiece(colSelected, rowSelected, "Black");
+                                    prevPositionX = prevPositionY = -1;
+                                }
                             }
                         }
                         //Selección
