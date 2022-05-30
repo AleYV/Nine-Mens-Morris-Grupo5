@@ -90,16 +90,43 @@ public class NineMensMorrisGame {
         }
         return false;
     }
-
+    //Comprueba si las dos casillas son vecinas
+    public boolean isNeighbour(int prevRow, int prevColum, int row, int column){
+        int a=0,b=0;
+        if (prevColum==0 || prevColum==6) a =3;
+        if (prevColum==1 || prevColum==5) a =2;
+        if (prevColum==2 || prevColum==4) a =1;
+        if (prevRow==6 || prevRow ==0) b =3;
+        if (prevRow==5 || prevRow ==1) b =2;
+        if (prevRow==4 || prevRow ==2) b =1;
+        if(prevRow == 3){
+            if(prevRow+a == row && prevColum==column) return true;
+            if(prevRow-a == row && prevColum==column) return true;
+            if(prevRow== row && prevColum+1==column) return true;
+            return (prevRow==row && prevColum-1==column);
+        }
+        else if(prevColum == 3){
+            if(prevRow == row && b+prevColum == column) return true;
+            if(prevRow == row && prevColum - b == column) return true;
+            if(prevRow+1 == row && prevColum == column) return true;
+            return (prevRow-1 == row && prevColum == column);
+        }
+        else {
+            if(prevRow== row && prevColum+a== column) return true;
+            if(prevRow== row && prevColum-a== column) return true;
+            if(prevRow+b== row && prevColum == column) return true;
+            return (prevRow-b== row && prevColum == column);
+        }
+    }
     //Comprueba si el movimiento es valido y retorna un booleano
     //Si retorna true, significa que actualizo la informacion de table (el tablero)
     public boolean makeMove(int prevRow, int prevColum, int row, int column){
-        if (row >= 0 && row < ROWS && column >= 0 && column < COLUMNS){
-            if(setCell(row, column)) {
-                table[prevRow][prevColum] = Cells.EMPTY;
-                return true;
+            if (row >= 0 && row < ROWS && column >= 0 && column < COLUMNS){
+                if(setCell(row, column)) {
+                    table[prevRow][prevColum] = Cells.EMPTY;
+                    return true;
+                }
             }
-        }
         return false;
     }
 
