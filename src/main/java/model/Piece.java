@@ -1,14 +1,14 @@
 package model;
 
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 
-public class Piece {
+public class Piece extends JLabel{
 
     private String color;
     private int positionX, positionY;
     private boolean isSelected;
     private boolean formMill;
-    private ImageIcon pieceImage;
 
     private static final String PATH = System.getProperty("user.dir") + "\\src\\main\\resources\\img\\Piece_";
     private static final String SELECTED = "_Selected.png";
@@ -20,7 +20,11 @@ public class Piece {
         this.positionY = positionY;
         isSelected = false;
         formMill = false;
-        pieceImage = new ImageIcon(PATH + color + ".png");
+
+        setIcon(new ImageIcon(PATH + color + ".png"));
+        setDisabledIcon(new ImageIcon(PATH + "Null.png"));
+        setBackground(null);
+        setHorizontalAlignment(JLabel.CENTER);
     }
 
     public String getColor() {
@@ -51,23 +55,30 @@ public class Piece {
         return isSelected;
     }
 
-    public void setSelected(boolean selected) {
-        this.isSelected = selected;
-        if(selected)
-            pieceImage = new ImageIcon(PATH + color + SELECTED);
-        else
-            pieceImage = new ImageIcon(PATH + color + ".png");
+    public boolean toggleSelected() {
+        isSelected = !isSelected;
+        if(isSelected) {
+            setIcon(new ImageIcon(PATH + color + SELECTED));
+            System.out.println("Cambie de icono a seleccionado");
+        }
+        else {
+            setIcon(new ImageIcon(PATH + color + ".png"));
+            System.out.println("Cambie de icono a des seleccionado");
+        }
+        
+        return isSelected;
     }
 
-    public ImageIcon getPieceImage() {
-        return pieceImage;
+    public void toggleEnabled(){
+        setEnabled(!this.isEnabled());
     }
 
-    public void toggleMill(){
+    public void toggleMill() {
         formMill = !formMill;
-        if(formMill)
-            pieceImage = new ImageIcon(PATH + color + MILL);
+        if (formMill)
+            setIcon(new ImageIcon(PATH + color + MILL));
         else
-            pieceImage = new ImageIcon(PATH + color + ".png");
+            setIcon(new ImageIcon(PATH + color + ".png"));
     }
+
 }
