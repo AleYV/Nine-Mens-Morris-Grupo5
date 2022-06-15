@@ -12,6 +12,8 @@ public class Player{
     private final Piece[] listOfPieces = new Piece[9];
     private boolean hasPieceSelected = false;
 
+    private int indexPieceSelected = -1;
+
     private final String color;
 
     public Player(String color) {
@@ -37,6 +39,31 @@ public class Player{
         return listOfPieces[index];
     }
 
+    public Piece getPieceAtPosition(int x, int y){
+        for (Piece piece:
+             listOfPieces) {
+            if(piece.getPositionX() == x && piece.getPositionY() == y)
+                return piece;
+        }
+        System.out.println("No se encontró ficha de colo" + color + " en la posición (" + x + ", " + y + ").");
+        return null;
+    }
+
+    public boolean hasPieceSelected(){
+        return hasPieceSelected;
+    }
+
+    public Piece getSelectedPiece(){
+        return listOfPieces[indexPieceSelected];
+    }
+
+    public void toggleSelectedPiece(){
+        if(indexPieceSelected != -1) {
+            listOfPieces[indexPieceSelected].toggleSelected();
+            hasPieceSelected = !hasPieceSelected;
+        }
+    }
+
     public void setListOfPieces() {
         int i = 0;
         while(i < TOTAL_PIECES) {
@@ -51,12 +78,14 @@ public class Player{
                         if (hasPieceSelected) {//Si vuelvo a seleccionar la que ya esta, se deselecciona
                             if (listOfPieces[finalI].isSelected()) {
                                 hasPieceSelected = listOfPieces[finalI].toggleSelected();
+                                indexPieceSelected = -1;
                                 System.out.println("Deseleccione la pieza " + finalI);
                             } else {
                                 System.out.println("No soy la pieza seleccionada, pero mi index es: " + finalI);
                             }
                         } else {//Si no hay, puedo seleccionar una
                             hasPieceSelected = listOfPieces[finalI].toggleSelected();
+                            indexPieceSelected = finalI;
                             System.out.println("seleccione la pieza " + finalI);
                         }
                     }else{
