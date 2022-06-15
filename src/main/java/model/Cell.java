@@ -26,7 +26,15 @@ public class Cell extends JPanel {
 
     public void setPiece(Piece piece) {
         remove(aux);
+        piece.setPositionX(positionX);
+        piece.setPositionY(positionY);
         add(piece);
+    }
+
+    public void removePiece(){
+        removeAll();
+        revalidate();
+        repaint();
     }
 
     public void changeText(String text){
