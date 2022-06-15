@@ -1,5 +1,7 @@
 package controller;
 
+import model.Player;
+
 public class NineMensMorrisGame {
     private static final int COLUMNS = 7;
     private static final int ROWS = 7;
@@ -13,13 +15,19 @@ public class NineMensMorrisGame {
     }
 
     private Cells[][] table;
-    private boolean turn = true;
+    private static String turn = "White";
     private GameState gameState = GameState.INIT;
+
+    private final Player player1, player2;
 
     // Crear el cuadrante donde se desarrollara el tablero
     public NineMensMorrisGame(){
         table = new Cells[ROWS][COLUMNS];
         initGame();
+        player1 = new Player("White");
+        player1.setListOfPieces();
+        player2 = new Player("Black");
+        player2.setListOfPieces();
     }
 
     //Que posiciones de la matriz son válidas para asignarle casillas del juego al tablero
@@ -36,14 +44,31 @@ public class NineMensMorrisGame {
         }
     }
 
+    public Player getPlayer1(){
+        return player1;
+    }
+
+    public Player getPlayer2(){
+        return player2;
+    }
+
+    public Player getCurrentPlayer(){
+        return turn.equals("White") ? player1 : player2;
+    }
+
     //Obtener el turno
-    public boolean getTurn(){
+    public static String getTurn(){
         return turn;
     }
 
     //Asigna el turno
-    public void setTurn(boolean turn) {
-        this.turn = turn;
+    public void setTurn(String turn) {
+        NineMensMorrisGame.turn = turn;
+    }
+
+    public void toggleTurn(){
+        if(turn.equals("White")) turn = "Black";
+        else turn = "White";
     }
 
     //Obtener columnas
@@ -82,10 +107,9 @@ public class NineMensMorrisGame {
     //Coloca la ficha correspondiente al turno y cambia el turno
     public boolean setCell(int row, int column){
         if (row >= 0 && row < ROWS && column >= 0 && column < COLUMNS){
-            if (turn) table[row][column] = Cells.WHITE;
+            if (turn.equals("White")) table[row][column] = Cells.WHITE;
             else table[row][column] = Cells.BLACK;
-            if(gameState == GameState.INIT)
-                turn = !turn;
+            if(gameState == GameState.INIT) toggleTurn();
             return true;
         }
         return false;
