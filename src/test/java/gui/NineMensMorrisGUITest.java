@@ -12,7 +12,7 @@ class NineMensMorrisGUITest {
 
     @Before
     public void setUp() {
-        game = new NineMensMorrisGame();
+        game = new NineMensMorrisGame(false);
     }
     @After
     public void tearDown() {

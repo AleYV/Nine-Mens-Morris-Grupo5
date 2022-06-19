@@ -3,11 +3,13 @@ package controller;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.launcher.TestExecutionListener;
 import controller.NineMensMorrisGame.Cells;
+
 import static org.junit.jupiter.api.Assertions.*;
+
 
 class NineMensMorrisGameTest implements TestExecutionListener {
 
-    NineMensMorrisGame game = new NineMensMorrisGame();
+    NineMensMorrisGame game = new NineMensMorrisGame(false);
 
     @Test
     void testManual(){
@@ -22,7 +24,7 @@ class NineMensMorrisGameTest implements TestExecutionListener {
         assertEquals(Cells.DISABLED,game.getCell(3,3));
 
         System.out.println("Verificar que el primer turno sea de las fichas blancas\n");
-        assertTrue(game.getTurn());
+        assertEquals("White", NineMensMorrisGame.getTurn());
     }
 
     @Test
