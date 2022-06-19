@@ -1,10 +1,11 @@
 package controller;
 
+import model.Cell;
 import model.Player;
 
 public class NineMensMorrisGame {
-    private static final int COLUMNS = 7;
-    private static final int ROWS = 7;
+    protected static final int COLUMNS = 7;
+    protected static final int ROWS = 7;
 
     public enum Cells{
         EMPTY, WHITE, BLACK, DISABLED
@@ -14,20 +15,19 @@ public class NineMensMorrisGame {
         INIT, PLAYING, WIN, LOSE, DRAW
     }
 
-    private Cells[][] table;
-    private static String turn = "White";
-    private GameState gameState = GameState.INIT;
+    protected Cells[][] table;
+    protected Cell[][] tableG = new Cell[ROWS][COLUMNS];
+    protected static String turn = "White";
+    protected GameState gameState = GameState.INIT;
 
-    private final Player player1, player2;
+    protected Player player1, player2;
 
     // Crear el cuadrante donde se desarrollara el tablero
-    public NineMensMorrisGame(){
+    public NineMensMorrisGame(boolean iAmBot){
         table = new Cells[ROWS][COLUMNS];
         initGame();
-        player1 = new Player("White");
-        player1.setListOfPieces();
-        player2 = new Player("Black");
-        player2.setListOfPieces();
+        customInitGame();
+        if(!iAmBot) initPlayers();
     }
 
     //Que posiciones de la matriz son válidas para asignarle casillas del juego al tablero
@@ -44,16 +44,43 @@ public class NineMensMorrisGame {
         }
     }
 
-    public Player getPlayer1(){
-        return player1;
+    private void customInitGame(){
+        for (int i = -3; i <= 3; i++){
+            for(int j = -3; j <= 3; j++){
+                if (i == 0 && j == 0) continue;
+
+                if(i == 0) {
+                    tableG[3][j + 3] = new Cell(3, j + 3);
+                    continue;
+                }
+                if(j == 0) {
+                    tableG[i + 3][3] = new Cell(i + 3, 3);
+                    continue;
+                }
+                if(Math.abs(i) == Math.abs(j)) {
+                    tableG[i + 3][j + 3] = new Cell(i + 3, j + 3);
+                }
+            }
+        }
     }
 
-    public Player getPlayer2(){
-        return player2;
+    public Cell[][] getTableG(){
+        return tableG;
+    }
+
+    private void initPlayers(){
+        player1 = new Player("White");
+        player1.setListOfPieces();
+        player2 = new Player("Black");
+        player2.setListOfPieces();
     }
 
     public Player getCurrentPlayer(){
         return turn.equals("White") ? player1 : player2;
+    }
+
+    public Player getRivalPlayer(){
+        return turn.equals("Black") ? player1 : player2;
     }
 
     //Obtener el turno
@@ -114,40 +141,50 @@ public class NineMensMorrisGame {
         }
         return false;
     }
+
+    public void customSetCell(int row, int column){
+        if (row >= 0 && row < ROWS && column >= 0 && column < COLUMNS){
+            tableG[column][row].setPiece(getCurrentPlayer().getPieceAtIndex(getCurrentPlayer().getNumberOfPiecesOnBoard()));
+            getCurrentPlayer().addPieceOnBoard();
+            //if(gameState == GameState.INIT) toggleTurn();
+            setCell(row, column);
+        }
+    }
+
     //Comprueba si las dos casillas son vecinas
-    public boolean isNeighbour(int prevRow, int prevColum, int row, int column){
+    public boolean isNeighbour(int prevRow, int prevColumn, int row, int column){
         int a=0,b=0;
-        if (prevColum==0 || prevColum==6) a =3;
-        if (prevColum==1 || prevColum==5) a =2;
-        if (prevColum==2 || prevColum==4) a =1;
+        if (prevColumn==0 || prevColumn==6) a =3;
+        if (prevColumn==1 || prevColumn==5) a =2;
+        if (prevColumn==2 || prevColumn==4) a =1;
         if (prevRow==6 || prevRow ==0) b =3;
         if (prevRow==5 || prevRow ==1) b =2;
         if (prevRow==4 || prevRow ==2) b =1;
         if(prevRow == 3){
-            if(prevRow+a == row && prevColum==column) return true;
-            if(prevRow-a == row && prevColum==column) return true;
-            if(prevRow== row && prevColum+1==column) return true;
-            return (prevRow==row && prevColum-1==column);
+            if(prevRow+a == row && prevColumn==column) return true;
+            if(prevRow-a == row && prevColumn==column) return true;
+            if(prevRow== row && prevColumn+1==column) return true;
+            return (prevRow==row && prevColumn-1==column);
         }
-        else if(prevColum == 3){
-            if(prevRow == row && b+prevColum == column) return true;
-            if(prevRow == row && prevColum - b == column) return true;
-            if(prevRow+1 == row && prevColum == column) return true;
-            return (prevRow-1 == row && prevColum == column);
+        else if(prevColumn == 3){
+            if(prevRow == row && b+prevColumn == column) return true;
+            if(prevRow == row && prevColumn - b == column) return true;
+            if(prevRow+1 == row && prevColumn == column) return true;
+            return (prevRow-1 == row && prevColumn == column);
         }
         else {
-            if(prevRow== row && prevColum+a== column) return true;
-            if(prevRow== row && prevColum-a== column) return true;
-            if(prevRow+b== row && prevColum == column) return true;
-            return (prevRow-b== row && prevColum == column);
+            if(prevRow== row && prevColumn+a== column) return true;
+            if(prevRow== row && prevColumn-a== column) return true;
+            if(prevRow+b== row && prevColumn == column) return true;
+            return (prevRow-b== row && prevColumn == column);
         }
     }
     //Comprueba si el movimiento es valido y retorna un booleano
     //Si retorna true, significa que actualizo la informacion de table (el tablero)
-    public boolean makeMove(int prevRow, int prevColum, int row, int column){
+    public boolean makeMove(int prevRow, int prevColumn, int row, int column){
             if (row >= 0 && row < ROWS && column >= 0 && column < COLUMNS){
                 if(setCell(row, column)) {
-                    table[prevRow][prevColum] = Cells.EMPTY;
+                    table[prevRow][prevColumn] = Cells.EMPTY;
                     return true;
                 }
             }

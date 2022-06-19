@@ -5,13 +5,13 @@ import controller.NineMensMorrisGame.Cells;
 import controller.NineMensMorrisGame.GameState;
 import model.Cell;
 import model.Piece;
+import model.Player;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 
 public class NineMensMorrisGUI extends JFrame {
     public static final int TOTAL_PIECES = 9;
@@ -23,8 +23,13 @@ public class NineMensMorrisGUI extends JFrame {
 
     private final NineMensMorrisGame controller;
 
+    private static Player currentPlayer;
+    private static Player rivalPlayer;
+
+    private Cell[][] casillas;
+
     public NineMensMorrisGUI() {
-        this(new NineMensMorrisGame());
+        this(new NineMensMorrisGame(false));
     }
 
     public NineMensMorrisGUI(NineMensMorrisGame controller) {
@@ -70,30 +75,31 @@ public class NineMensMorrisGUI extends JFrame {
 
     class GameBoard extends JPanel {
         JLabel gameBoardBg = new JLabel();
-        Cell[][] casillas = new Cell[7][7];
+        TurnBar barStatus = new TurnBar();
 
         GameBoard() {
             setBackground(Color.decode("#A9814E"));
             setLayout(new BorderLayout());
+
+            casillas = controller.getTableG();
 
             for (int i = -3; i <= 3; i++){
                 for(int j = -3; j <= 3; j++){
                     if (i==0 && j==0) continue;
 
                     if(i == 0) {
-                        add(casillas[3][j+3] = new Cell(3, j+3));
+                        add(casillas[3][j + 3]);
                         continue;
                     }
                     if(j == 0) {
-                        add(casillas[i+3][3] = new Cell(i+3,3));
+                        add(casillas[i + 3][3]);
                         continue;
                     }
                     if(Math.abs(i) == Math.abs(j))
-                        add(casillas[i+3][j+3] = new Cell(i+3,j+3));
+                        add(casillas[i + 3][j + 3]);
                 }
             }
 
-            TurnBar barStatus = new TurnBar();
             barStatus.setPreferredSize(new Dimension(512, 90));
             add(barStatus);
 
@@ -104,54 +110,38 @@ public class NineMensMorrisGUI extends JFrame {
                     int colSelected = (e.getX()) / Cell.CELL_SIZE;
                     int rowSelected = (e.getY() - Cell.HEIGHT_PADDING) / Cell.CELL_SIZE;
 
-                    //Imprime la posición donde se hace click
+                    //Imprime la posición donde se hace clic
                     System.out.println("(x,y): (" + e.getX() + ", " + e.getY() + ")");
                     System.out.println("Casilla: (" + colSelected + ", " + rowSelected + ")");
 
-                    //Se asegura que se esta clickeando dentro del tablero
+                    //Se asegura que se está haciendo clic dentro del tablero
                     if(e.getY() <= Cell.HEIGHT_PADDING){
                         System.out.println("No estoy dentro");
                         return;
                     }
 
+                    //Se asigna los jugadores dependiendo del turno
+                    currentPlayer = controller.getCurrentPlayer();
+                    rivalPlayer = controller.getRivalPlayer();
+
                     //Comprueba si la fase de colocar fichas todavía no ha terminado
                     if(controller.getGameState() == GameState.INIT){
                         //Si la casilla seleccionada esta vacía, se coloca la ficha correspondiente del turno
-                        if(controller.getCell(rowSelected, colSelected) == Cells.EMPTY) {
+                        if(controller.getCell(rowSelected, colSelected) == Cells.EMPTY && !currentPlayer.isBot()) {
                             System.out.println("Deberia colocar una ficha en esta casilla: (" + colSelected + ", " + rowSelected + ")");
-                            int piecesOnBoardPlayer1 = controller.getPlayer1().getNumberOfPiecesOnBoard();
-                            int piecesOnBoardPlayer2 = controller.getPlayer2().getNumberOfPiecesOnBoard();
 
-                            //Si el turno es de las fichas blancas, y aún quedan fichas negras, coloca la ficha
-                            //en la casilla seleccionada y pasa turno
-                            if(NineMensMorrisGame.getTurn().equals("White")){
-                                initWhitePieces[piecesOnBoardPlayer1].toggleEnabled();
-                                if(piecesOnBoardPlayer2 < TOTAL_PIECES)
-                                    initBlackPieces[piecesOnBoardPlayer2].toggleSelected();
+                            //Quita una ficha de los labels iniciales
+                            if(currentPlayer.getColor().equals("White")) toggleInitPieces(initWhitePieces, initBlackPieces);
+                            else toggleInitPieces(initBlackPieces, initWhitePieces);
 
-                                casillas[colSelected][rowSelected].changeText("Asignado como White");
-                                casillas[colSelected][rowSelected]
-                                        .setPiece(controller.getPlayer1().getPieceAtIndex(piecesOnBoardPlayer1));
-                                controller.getPlayer1().addPieceOnBoard();
-                            }
-                            //Si el turno es de las fichas negras, y aún quedan fichas blancas, coloca la ficha
-                            //en la casilla seleccionada y pasa turno
-                            else{
-                                initBlackPieces[piecesOnBoardPlayer2].toggleEnabled();
-                                if(piecesOnBoardPlayer1 < TOTAL_PIECES)
-                                    initWhitePieces[piecesOnBoardPlayer1].toggleSelected();
-                                casillas[colSelected][rowSelected].changeText("Asignado como Black");
-                                casillas[colSelected][rowSelected]
-                                        .setPiece(controller.getPlayer2().getPieceAtIndex(piecesOnBoardPlayer2));
-                                controller.getPlayer2().addPieceOnBoard();
-                            }
-                            controller.setCell(rowSelected, colSelected);
+                            //Añade una ficha al tablero
+                            controller.customSetCell(rowSelected, colSelected);
                             barStatus.updateTurnBar();
 
                             //Si ambos jugadores ya colocaron sus fichas, se cambia el estado del juego, culminando
                             //la fase de colocación
-                            if(controller.getPlayer1().getNumberOfPiecesOnBoard() == TOTAL_PIECES
-                                    && controller.getPlayer2().getNumberOfPiecesOnBoard() == TOTAL_PIECES){
+                            if(currentPlayer.getNumberOfPiecesOnBoard() == TOTAL_PIECES
+                                    && rivalPlayer.getNumberOfPiecesOnBoard() == TOTAL_PIECES){
                                 controller.setGameState(GameState.PLAYING);
                                 System.out.println("Culmino la fase de inicio.");
                                 return;
@@ -170,23 +160,23 @@ public class NineMensMorrisGUI extends JFrame {
                     if(controller.getGameState() == GameState.PLAYING){
                         //Movimiento
                         //Si hay una ficha seleccionada
-                        if(controller.getCurrentPlayer().hasPieceSelected()){
+                        if(currentPlayer.hasPieceSelected()){
                             //Y la celda seleccionada está vacía
                             if(controller.getCell(rowSelected, colSelected) == Cells.EMPTY){
                                 //Se llama a la función del controlador para comprobar si es un movimiento válido
-                                int prevPositionX = controller.getCurrentPlayer().getSelectedPiece().getPositionX();
-                                int prevPositionY = controller.getCurrentPlayer().getSelectedPiece().getPositionY();
+                                int prevPositionX = currentPlayer.getSelectedPiece().getPositionX();
+                                int prevPositionY = currentPlayer.getSelectedPiece().getPositionY();
 
                                 if(controller.isNeighbour(prevPositionY, prevPositionX, rowSelected, colSelected)){
                                     //Se llama a la función del controlador para comprobar si es un movimiento válido
                                     if(controller.makeMove(prevPositionY, prevPositionX, rowSelected, colSelected)){
                                         //Se libera la casilla donde estaba la ficha
-                                        casillas[colSelected][rowSelected].setPiece(controller.getCurrentPlayer().getSelectedPiece());
-                                        controller.getCurrentPlayer().toggleSelectedPiece();
+                                        casillas[colSelected][rowSelected].setPiece(currentPlayer.getSelectedPiece());
+                                        currentPlayer.toggleSelectedPiece();
                                         casillas[prevPositionX][prevPositionY].removePiece();
 
-                                        //Llama a la funcion moveMakeMill para saber si el movimiento realizado
-                                        //formó un molino y retorne las posiciones de la fichas que la conforman
+                                        //Llama a la función moveMakeMill para saber si el movimiento realizado
+                                        //formó un molino y retorne las posiciones de las fichas que la conforman
                                         String positions = controller.moveMakeMill();
                                         if(!positions.isEmpty())
                                             showMill(positions);
@@ -212,8 +202,20 @@ public class NineMensMorrisGUI extends JFrame {
             add(gameBoardBg, BorderLayout.NORTH);
         }
 
+        private void toggleInitPieces(Piece[] currentLabel, Piece[] rivalLabel){
+            int currentIndex = currentPlayer.getNumberOfPiecesOnBoard();
+            int rivalIndex = rivalPlayer.getNumberOfPiecesOnBoard();
+            currentLabel[currentIndex].toggleEnabled();
+            if(rivalIndex < TOTAL_PIECES && !rivalPlayer.isBot())
+                rivalLabel[rivalIndex].toggleSelected();
+            else if(rivalPlayer.isBot()) {
+                currentIndex++;
+                rivalLabel[rivalIndex].toggleEnabled();
+                if(currentIndex < TOTAL_PIECES)
+                    currentLabel[currentIndex].toggleSelected();
+            }
+        }
         private void showMill(String positions){
-
             int c0 = Character.getNumericValue(positions.charAt(0));
             int c1 = Character.getNumericValue(positions.charAt(1));
             int c2 = Character.getNumericValue(positions.charAt(2));
@@ -221,9 +223,9 @@ public class NineMensMorrisGUI extends JFrame {
             int c4 = Character.getNumericValue(positions.charAt(4));
             int c5 = Character.getNumericValue(positions.charAt(5));
 
-            controller.getCurrentPlayer().getPieceAtPosition(c0, c1).toggleMill();
-            controller.getCurrentPlayer().getPieceAtPosition(c2, c3).toggleMill();
-            controller.getCurrentPlayer().getPieceAtPosition(c4, c5).toggleMill();
+            currentPlayer.getPieceAtPosition(c0, c1).toggleMill();
+            currentPlayer.getPieceAtPosition(c2, c3).toggleMill();
+            currentPlayer.getPieceAtPosition(c4, c5).toggleMill();
         }
     }
 
