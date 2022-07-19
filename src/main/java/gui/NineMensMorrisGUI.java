@@ -1,7 +1,6 @@
 package gui;
 
 import controller.NineMensMorrisGame;
-import controller.NineMensMorrisGame.Cells;
 import controller.NineMensMorrisGame.GameState;
 import model.Cell;
 import model.Piece;
@@ -16,22 +15,29 @@ import java.awt.event.MouseEvent;
 public class NineMensMorrisGUI extends JFrame {
     public static final int TOTAL_PIECES = 9;
 
-    private Piece[] initWhitePieces;
-    private Piece[] initBlackPieces;
+    //Lista de Piezas para la fase de colocación y posteriormente para indicar las fichas eliminadas
+    private Piece[] piecesOnLeft;
+    private Piece[] piecesOnRight;
 
+    //Label para mostrar la ficha que corresponde al turno actual
     private JLabel activePieceIcon;
 
+    //Controlador que se encarga de la lógica del tablero en general
     private final NineMensMorrisGame controller;
 
+    //Instancias de los jugadores
     private static Player currentPlayer;
     private static Player rivalPlayer;
 
+    //Matriz de tipo Cell que serán contenedores para los objetos de tipo Piece
     private Cell[][] casillas;
 
+    //Constructor para partida jugador contra jugador
     public NineMensMorrisGUI() {
         this(new NineMensMorrisGame(false));
     }
 
+    //Constructor general (puede aceptar el caso jugador contra bot)
     public NineMensMorrisGUI(NineMensMorrisGame controller) {
         this.controller = controller;
         setContentPane();
@@ -42,21 +48,28 @@ public class NineMensMorrisGUI extends JFrame {
         setVisible(true);
     }
 
+    //Inicialización de los componentes de la ventana del programa
     private void setContentPane() {
+        //Se dimensiona el tablero de juego
         GameBoard gameboard = new GameBoard();
         gameboard.setPreferredSize(new Dimension(504, 600));
 
-        initWhitePieces = new Piece[TOTAL_PIECES];
-        InitPieces whitePieces = new InitPieces("White",initWhitePieces);
-        initWhitePieces[0].toggleSelected();
+        //Se inicializa el panel izquierdo para las piezas (Blancas)
+        piecesOnLeft = new Piece[TOTAL_PIECES];
+        InitPieces whitePieces = new InitPieces("White", piecesOnLeft);
+        //Se pone como seleccionado la primera ficha para indicar que este inicia la partida
+        piecesOnLeft[0].toggleSelected();
 
-        initBlackPieces = new Piece[TOTAL_PIECES];
-        InitPieces blackPieces = new InitPieces("Black", initBlackPieces);
+        //Se inicializa el panel derecho para las piezas (Negras)
+        piecesOnRight = new Piece[TOTAL_PIECES];
+        InitPieces blackPieces = new InitPieces("Black", piecesOnRight);
 
+        //Se crea un contenedor para los paneles
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
         contentPane.setBackground(Color.decode("#A9814E"));
 
+        //Distribución de paneles
         contentPane.add(gameboard, BorderLayout.CENTER);
         contentPane.add(whitePieces, BorderLayout.WEST);
         contentPane.add(blackPieces, BorderLayout.EAST);
@@ -81,8 +94,9 @@ public class NineMensMorrisGUI extends JFrame {
             setBackground(Color.decode("#A9814E"));
             setLayout(new BorderLayout());
 
-            casillas = controller.getTableG();
+            casillas = controller.getTable();
 
+            //Añade al layout las casillas que contendrán las piezas
             for (int i = -3; i <= 3; i++){
                 for(int j = -3; j <= 3; j++){
                     if (i==0 && j==0) continue;
@@ -100,9 +114,12 @@ public class NineMensMorrisGUI extends JFrame {
                 }
             }
 
+            //Se define las dimensiones de la barra de turno y se añade al layout
             barStatus.setPreferredSize(new Dimension(512, 90));
             add(barStatus);
 
+            //Listener del tablero para capturar las coordenadas de donde se hace clic y saber a qué casilla corresponde
+            //Está lógica está limitada en su mayoría para el juego jugador contra jugador
             gameBoardBg.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -114,7 +131,8 @@ public class NineMensMorrisGUI extends JFrame {
                     System.out.println("(x,y): (" + e.getX() + ", " + e.getY() + ")");
                     System.out.println("Casilla: (" + colSelected + ", " + rowSelected + ")");
 
-                    //Se asegura que se está haciendo clic dentro del tablero
+                    //El tablero tiene un padding superior, por lo que se asegura que se esté haciendo clic
+                    //dentro del tablero
                     if(e.getY() <= Cell.HEIGHT_PADDING){
                         System.out.println("No estoy dentro");
                         return;
@@ -125,17 +143,18 @@ public class NineMensMorrisGUI extends JFrame {
                     rivalPlayer = controller.getRivalPlayer();
 
                     //Comprueba si la fase de colocar fichas todavía no ha terminado
-                    if(controller.getGameState() == GameState.INIT){
-                        //Si la casilla seleccionada esta vacía, se coloca la ficha correspondiente del turno
-                        if(controller.getCell(rowSelected, colSelected) == Cells.EMPTY && !currentPlayer.isBot()) {
-                            System.out.println("Deberia colocar una ficha en esta casilla: (" + colSelected + ", " + rowSelected + ")");
+                    if(NineMensMorrisGame.getGameState() == GameState.INIT){
+                        //Si la casilla seleccionada no es null, se coloca la ficha correspondiente del turno
+                        if(controller.getCell(rowSelected, colSelected) != null && !currentPlayer.isBot()) {
+                            System.out.println("Debería colocar una ficha en esta casilla: (" + colSelected
+                                    + ", " + rowSelected + ")");
 
                             //Quita una ficha de los labels iniciales
-                            if(currentPlayer.getColor().equals("White")) toggleInitPieces(initWhitePieces, initBlackPieces);
-                            else toggleInitPieces(initBlackPieces, initWhitePieces);
+                            if(currentPlayer.getColor().equals("White")) toggleInitPieces(piecesOnLeft, piecesOnRight);
+                            else toggleInitPieces(piecesOnRight, piecesOnLeft);
 
-                            //Añade una ficha al tablero
-                            controller.customSetCell(rowSelected, colSelected);
+                            //Y añade dicha ficha al tablero
+                            controller.setCell(rowSelected, colSelected);
                             barStatus.updateTurnBar();
 
                             //Si ambos jugadores ya colocaron sus fichas, se cambia el estado del juego, culminando
@@ -147,45 +166,46 @@ public class NineMensMorrisGUI extends JFrame {
                                 return;
                             }
                         }
-                        //Si la celda seleccionada no pertenece a una casilla válida, no se hace nada
-                        else if(controller.getCell(rowSelected, colSelected) == Cells.DISABLED)
+                        //Si la celda seleccionada es null, no se hace nada
+                        else if(controller.getCell(rowSelected, colSelected) == null)
                             System.out.println("No puedo colocar la ficha en esta casilla: (" + colSelected + ", "
-                                    + rowSelected + "), no es una posicion valida");
-                        else
-                            System.out.println("No puedo colocar la ficha en esta casilla: (" + colSelected + ", "
-                                    + rowSelected + "), esta ocupada");
+                                    + rowSelected + "), no es una posición valida");
                     }
 
-                    //Etapa de seleccion y movimiento de fichas
-                    if(controller.getGameState() == GameState.PLAYING){
+                    //Etapa de selección y movimiento de fichas
+                    if(NineMensMorrisGame.getGameState() == GameState.PLAYING){
                         //Movimiento
                         //Si hay una ficha seleccionada
                         if(currentPlayer.hasPieceSelected()){
-                            //Y la celda seleccionada está vacía
-                            if(controller.getCell(rowSelected, colSelected) == Cells.EMPTY){
-                                //Se llama a la función del controlador para comprobar si es un movimiento válido
+                            //Y la celda seleccionada no es null
+                            if(controller.getCell(rowSelected, colSelected) != null){
+                                //Se guarda la posición previa de la última ficha seleccionada.
                                 int prevPositionX = currentPlayer.getSelectedPiece().getPositionX();
                                 int prevPositionY = currentPlayer.getSelectedPiece().getPositionY();
 
+                                //Si la casilla selecciona es vecina con respecto al anterior
                                 if(controller.isNeighbour(prevPositionY, prevPositionX, rowSelected, colSelected)){
-                                    //Se llama a la función del controlador para comprobar si es un movimiento válido
+                                    //Y es un movimiento válido
                                     if(controller.makeMove(prevPositionY, prevPositionX, rowSelected, colSelected)){
-                                        //Se libera la casilla donde estaba la ficha
+                                        //Se mueve la ficha a la nueva casilla
                                         casillas[colSelected][rowSelected].setPiece(currentPlayer.getSelectedPiece());
                                         currentPlayer.toggleSelectedPiece();
+                                        //Y se libera la casilla anterior donde estaba la ficha
                                         casillas[prevPositionX][prevPositionY].removePiece();
 
-                                        //Llama a la función moveMakeMill para saber si el movimiento realizado
+                                        //Se llama a la función moveMakeMill para saber si el movimiento realizado
                                         //formó un molino y retorne las posiciones de las fichas que la conforman
                                         String positions = controller.moveMakeMill();
                                         if(!positions.isEmpty())
                                             showMill(positions);
 
+                                        //Se cambia el turno y se actualiza el estado del turno
                                         controller.toggleTurn();
                                         barStatus.updateTurnBar();
                                     }
-                                } else{
-                                    System.out.println("La casilla (" + colSelected + ", " + rowSelected + ") no es su vecino");
+                                } else {
+                                    System.out.println("La casilla (" + colSelected +
+                                            ", " + rowSelected + ") no es su vecino");
                                 }
                             }
                         }
@@ -193,21 +213,29 @@ public class NineMensMorrisGUI extends JFrame {
                 }
             });
 
-            gameBoardBg.setIcon(new ImageIcon(System.getProperty("user.dir") + "\\src\\main\\resources\\img\\GameBoard.png"));
+            //Imagen del tablero
+            gameBoardBg.setIcon(new ImageIcon(System.getProperty("user.dir") +
+                    "\\src\\main\\resources\\img\\GameBoard.png"));
             gameBoardBg.setOpaque(true);
 
+            //Propiedades del label
             gameBoardBg.setHorizontalAlignment(JLabel.CENTER);
             gameBoardBg.setBackground(null);
             gameBoardBg.setBorder(new EmptyBorder(Cell.HEIGHT_PADDING,0,0,0));
             add(gameBoardBg, BorderLayout.NORTH);
         }
 
+        //Función para la fase de colocación de fichas, trabaja las labels de la derecha e izquierda
         private void toggleInitPieces(Piece[] currentLabel, Piece[] rivalLabel){
+            //Se toma el número de fichas de cada jugador
             int currentIndex = currentPlayer.getNumberOfPiecesOnBoard();
             int rivalIndex = rivalPlayer.getNumberOfPiecesOnBoard();
+            //Y se deshabilita la ficha ya colocada en el label correspondiente del jugador actual
             currentLabel[currentIndex].toggleEnabled();
+            //Si el rival todavía tiene fichas para colocar y no es bot, se selecciona la ficha superior del label
             if(rivalIndex < TOTAL_PIECES && !rivalPlayer.isBot())
                 rivalLabel[rivalIndex].toggleSelected();
+            //Si el rival es bot, se ignora el paso de selección y se pasa la selección al jugador
             else if(rivalPlayer.isBot()) {
                 currentIndex++;
                 rivalLabel[rivalIndex].toggleEnabled();
