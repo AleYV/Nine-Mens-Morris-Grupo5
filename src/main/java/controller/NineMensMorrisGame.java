@@ -1,6 +1,7 @@
 package controller;
 
 import model.Cell;
+import model.Piece;
 import model.Player;
 
 public class NineMensMorrisGame {
@@ -56,6 +57,7 @@ public class NineMensMorrisGame {
     public Cell[][] getTable(){
         return table;
     }
+
 
     //Inicializa a los jugadores
     private void initPlayers(){
@@ -170,10 +172,26 @@ public class NineMensMorrisGame {
     }
 
     //Verifica si el movimiento realizado ha formado un molino
-    public String moveMakeMill(){
-        //String mill = "";
-        //Hacer logica
-        //return mill;
-        return "";
+    public boolean moveMakeMill(Player player,Cell[][] casillas,int newRow, int newColumn){
+        System.out.println("-----------");
+        int[] arreglo = casillas[newColumn][newRow].getNeighbors();
+        if(casillas[arreglo[0]][newRow].getHasPiece() == true && casillas[arreglo[1]][newRow].getHasPiece() == true){
+            if(casillas[arreglo[0]][newRow].getColorPiece() == player.getColor() && casillas[arreglo[1]][newRow].getColorPiece() == player.getColor()){
+                System.out.println("Hay molino");
+                System.out.println("-----------");
+                return true;
+            }
+        } else if (casillas[newColumn][arreglo[2]].getHasPiece() == true && casillas[newColumn][arreglo[3]].getHasPiece() == true) {
+            if(casillas[newColumn][arreglo[2]].getColorPiece() == player.getColor() && casillas[newColumn][arreglo[3]].getColorPiece() == player.getColor()){
+                System.out.println("Hay molino");
+                System.out.println("-----------");
+                return true;
+            }
+        } else{
+            System.out.println("No hay molino");
+            System.out.println("-----------");
+        }
+        return false;
     }
+
 }

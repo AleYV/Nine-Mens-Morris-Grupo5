@@ -1,5 +1,7 @@
 package model;
 
+import com.sun.source.tree.NewArrayTree;
+
 import javax.swing.JPanel;
 
 public class Cell extends JPanel {
@@ -14,20 +16,30 @@ public class Cell extends JPanel {
     //¿La celda tiene una pieza?
     private boolean hasPiece = false;
 
+    //Si la celda tiene una pieza, ¿que color es?
+    private String getColor;
+
+    //Arreglo a cada celda que no sea null
+    private int[] Neighbords;
+
     //Constructor que recibe los parámetros de su posición
     public Cell(int i, int j){
         positionX = i;
         positionY = j;
+        Neighbords = new int[4];
         setBounds(CELL_SIZE*i, (CELL_SIZE*j + HEIGHT_PADDING), CELL_SIZE, CELL_SIZE);
         setBackground(null);
         setOpaque(false);
     }
+
+
 
     //Se le asigna una pieza a la celda
     public void setPiece(Piece piece) {
         removeAll();
         piece.setPositionX(positionX);
         piece.setPositionY(positionY);
+        getColor = piece.getColor();
         add(piece);
         hasPiece = true;
         revalidate();
@@ -52,8 +64,19 @@ public class Cell extends JPanel {
         return positionY;
     }
 
+    public int[] setNeighbors(int[] neigh){
+        Neighbords = neigh;
+        return Neighbords;
+    }
+
+    public int[] getNeighbors(){
+        return Neighbords;
+    }
+
     //Retorna si la celda tiene una pieza o no
     public boolean getHasPiece(){
        return hasPiece;
     }
+
+    public String getColorPiece(){ return getColor;}
 }

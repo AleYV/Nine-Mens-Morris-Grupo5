@@ -32,6 +32,33 @@ public class NineMensMorrisGUI extends JFrame {
     //Matriz de tipo Cell que serán contenedores para los objetos de tipo Piece
     private Cell[][] casillas;
 
+    //tabla de vecinos para molino
+    /*public int[][] NeighrbordsMill1 ={  {3,6,3,6},{1,2,0,6},{3,6,0,3},
+
+                                        {3,5,3,5},{0,2,1,5},{3,5,1,3},
+
+                                        {3,4,3,4},{0,1,2,4},{3,4,2,3},
+
+                                        {0,6,1,2},{1,5,0,2},{2,4,0,1},
+
+                                        {2,4,5,6},{1,5,4,6},{0,6,4,5},
+
+                                        {2,3,3,4},{5,6,2,4},{2,3,2,3},
+
+                                        {1,3,3,5},{4,6,1,5},{1,3,1,3},
+
+                                        {0,3,3,6},{4,5,0,6},{0,3,0,3}};*/
+
+    //Arreglo que contiene los x e y de los vecinos de cada casilla
+    public int[] NeighrbordsMill1 ={  3,6,3,6,1,2,0,6,3,6,0,3,
+                                      3,5,3,5,0,2,1,5,3,5,1,3,
+                                      3,4,3,4,0,1,2,4,3,4,2,3,
+                                      0,6,1,2,1,5,0,2,2,4,0,1,
+                                      2,4,5,6,1,5,4,6,0,6,4,5,
+                                      2,3,3,4,5,6,2,4,2,3,2,3,
+                                      1,3,3,5,4,6,1,5,1,3,1,3,
+                                      0,3,3,6,4,5,0,6,0,3,0,3};
+
     //Constructor para partida jugador contra jugador
     public NineMensMorrisGUI() {
         this(new NineMensMorrisGame(false));
@@ -96,6 +123,7 @@ public class NineMensMorrisGUI extends JFrame {
 
             casillas = controller.getTable();
 
+
             //Añade al layout las casillas que contendrán las piezas
             for (int i = -3; i <= 3; i++){
                 for(int j = -3; j <= 3; j++){
@@ -113,6 +141,40 @@ public class NineMensMorrisGUI extends JFrame {
                         add(casillas[i + 3][j + 3]);
                 }
             }
+
+
+            int k =0;
+            for(int i =0;i<casillas.length;i++){
+                for(int j=0;j<casillas.length;j++){
+                    if(casillas[i][j] != null){
+                        int[] arreglo = new int[4];
+                        while(k<96){
+                            for(int l=0;l<arreglo.length;l++){
+                                arreglo[l] = NeighrbordsMill1[k];
+                                k++;
+                            }
+                            break;
+                        }
+                        casillas[i][j].setNeighbors(arreglo);
+                   }
+                }
+            }
+
+            /*for(int i =0;i<casillas.length;i++){
+                for(int j=0;j<casillas.length;j++) {
+                    if(casillas[i][j] != null) {
+                        int[] prueba = casillas[i][j].getNeighbords();
+                        for(int p=0; p<prueba.length;p++){
+                            System.out.printf(prueba[p]+" ");;
+                        }
+                        System.out.println(" ");
+                    }
+
+                }
+
+            }*/
+
+
 
             //Se define las dimensiones de la barra de turno y se añade al layout
             barStatus.setPreferredSize(new Dimension(512, 90));
@@ -195,9 +257,9 @@ public class NineMensMorrisGUI extends JFrame {
 
                                         //Se llama a la función moveMakeMill para saber si el movimiento realizado
                                         //formó un molino y retorne las posiciones de las fichas que la conforman
-                                        String positions = controller.moveMakeMill();
-                                        if(!positions.isEmpty())
-                                            showMill(positions);
+                                        boolean positions = controller.moveMakeMill(currentPlayer,casillas,rowSelected,colSelected);
+                                        //if(!positions.isEmpty())
+                                            //showMill(positions);
 
                                         //Se cambia el turno y se actualiza el estado del turno
                                         controller.toggleTurn();
