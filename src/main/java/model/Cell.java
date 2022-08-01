@@ -20,13 +20,13 @@ public class Cell extends JPanel {
     private String getColor;
 
     //Arreglo a cada celda que no sea null
-    private int[] Neighbords;
+    private int[] Neighbours;
 
     //Constructor que recibe los parámetros de su posición
     public Cell(int i, int j){
         positionX = i;
         positionY = j;
-        Neighbords = new int[4];
+        Neighbours = new int[4];
         setBounds(CELL_SIZE*i, (CELL_SIZE*j + HEIGHT_PADDING), CELL_SIZE, CELL_SIZE);
         setBackground(null);
         setOpaque(false);
@@ -64,19 +64,20 @@ public class Cell extends JPanel {
         return positionY;
     }
 
-    public int[] setNeighbors(int[] neigh){
-        Neighbords = neigh;
-        return Neighbords;
+    public int[] setNeighbours(int[] neigh){
+        Neighbours = neigh;
+        return Neighbours;
     }
 
-    public int[] getNeighbors(){
-        return Neighbords;
+    public int[] getNeighbours(){
+        return Neighbours;
     }
 
     //Retorna si la celda tiene una pieza o no
     public boolean getHasPiece(){
        return hasPiece;
     }
+
 
     public String getColorPiece(){ return getColor;}
 }

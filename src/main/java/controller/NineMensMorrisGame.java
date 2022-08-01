@@ -174,15 +174,21 @@ public class NineMensMorrisGame {
     //Verifica si el movimiento realizado ha formado un molino
     public boolean moveMakeMill(Player player,Cell[][] casillas,int newRow, int newColumn){
         System.out.println("-----------");
-        int[] arreglo = casillas[newColumn][newRow].getNeighbors();
+        int[] arreglo = casillas[newColumn][newRow].getNeighbours();
         if(casillas[arreglo[0]][newRow].getHasPiece() == true && casillas[arreglo[1]][newRow].getHasPiece() == true){
             if(casillas[arreglo[0]][newRow].getColorPiece() == player.getColor() && casillas[arreglo[1]][newRow].getColorPiece() == player.getColor()){
+                player.getPieceAtPosition(arreglo[0],newRow).pieceFormMill();
+                player.getPieceAtPosition(arreglo[1],newRow).pieceFormMill();
+                player.getPieceAtPosition(newColumn,newRow).pieceFormMill();
                 System.out.println("Hay molino");
                 System.out.println("-----------");
                 return true;
             }
         } else if (casillas[newColumn][arreglo[2]].getHasPiece() == true && casillas[newColumn][arreglo[3]].getHasPiece() == true) {
             if(casillas[newColumn][arreglo[2]].getColorPiece() == player.getColor() && casillas[newColumn][arreglo[3]].getColorPiece() == player.getColor()){
+                player.getPieceAtPosition(newColumn,arreglo[2]).pieceFormMill();
+                player.getPieceAtPosition(newColumn,arreglo[3]).pieceFormMill();
+                player.getPieceAtPosition(newColumn,newRow).pieceFormMill();
                 System.out.println("Hay molino");
                 System.out.println("-----------");
                 return true;

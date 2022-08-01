@@ -32,25 +32,8 @@ public class NineMensMorrisGUI extends JFrame {
     //Matriz de tipo Cell que serán contenedores para los objetos de tipo Piece
     private Cell[][] casillas;
 
-    //tabla de vecinos para molino
-    /*public int[][] NeighrbordsMill1 ={  {3,6,3,6},{1,2,0,6},{3,6,0,3},
-
-                                        {3,5,3,5},{0,2,1,5},{3,5,1,3},
-
-                                        {3,4,3,4},{0,1,2,4},{3,4,2,3},
-
-                                        {0,6,1,2},{1,5,0,2},{2,4,0,1},
-
-                                        {2,4,5,6},{1,5,4,6},{0,6,4,5},
-
-                                        {2,3,3,4},{5,6,2,4},{2,3,2,3},
-
-                                        {1,3,3,5},{4,6,1,5},{1,3,1,3},
-
-                                        {0,3,3,6},{4,5,0,6},{0,3,0,3}};*/
-
-    //Arreglo que contiene los x e y de los vecinos de cada casilla
-    public int[] NeighrbordsMill1 ={  3,6,3,6,1,2,0,6,3,6,0,3,
+    //tabla de vecinos
+    public int[] NeighboursMill ={  3,6,3,6,1,2,0,6,3,6,0,3,
                                       3,5,3,5,0,2,1,5,3,5,1,3,
                                       3,4,3,4,0,1,2,4,3,4,2,3,
                                       0,6,1,2,1,5,0,2,2,4,0,1,
@@ -143,6 +126,7 @@ public class NineMensMorrisGUI extends JFrame {
             }
 
 
+            //Se le asigna a cada Cell su arreglo de vecino por x e y
             int k =0;
             for(int i =0;i<casillas.length;i++){
                 for(int j=0;j<casillas.length;j++){
@@ -150,29 +134,15 @@ public class NineMensMorrisGUI extends JFrame {
                         int[] arreglo = new int[4];
                         while(k<96){
                             for(int l=0;l<arreglo.length;l++){
-                                arreglo[l] = NeighrbordsMill1[k];
+                                arreglo[l] = NeighboursMill[k];
                                 k++;
                             }
                             break;
                         }
-                        casillas[i][j].setNeighbors(arreglo);
+                        casillas[i][j].setNeighbours(arreglo);
                    }
                 }
             }
-
-            /*for(int i =0;i<casillas.length;i++){
-                for(int j=0;j<casillas.length;j++) {
-                    if(casillas[i][j] != null) {
-                        int[] prueba = casillas[i][j].getNeighbords();
-                        for(int p=0; p<prueba.length;p++){
-                            System.out.printf(prueba[p]+" ");;
-                        }
-                        System.out.println(" ");
-                    }
-
-                }
-
-            }*/
 
 
 
@@ -256,8 +226,8 @@ public class NineMensMorrisGUI extends JFrame {
                                         casillas[prevPositionX][prevPositionY].removePiece();
 
                                         //Se llama a la función moveMakeMill para saber si el movimiento realizado
-                                        //formó un molino y retorne las posiciones de las fichas que la conforman
-                                        boolean positions = controller.moveMakeMill(currentPlayer,casillas,rowSelected,colSelected);
+                                        //formó un molino
+                                        boolean hasMill = controller.moveMakeMill(currentPlayer,casillas,rowSelected,colSelected);
                                         //if(!positions.isEmpty())
                                             //showMill(positions);
 

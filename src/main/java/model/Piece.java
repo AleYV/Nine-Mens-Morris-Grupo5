@@ -84,6 +84,10 @@ public class Piece extends JLabel{
         }
     }
 
+    public void  pieceFormMill(){
+        setIcon(new ImageIcon(PATH + color + MILL));
+    }
+
     //Palanca: Si la ficha está habilitada, la deshabilita
     //caso similar si la ficha ya está deshabilitada
     public void toggleEnabled(){
@@ -93,11 +97,7 @@ public class Piece extends JLabel{
     //Palanca: Si la ficha no pertenecía a un molino, para a formar parte de un molino y se le cambia el icono
     //caso similar si la ficha ya formaba parte de un molino
     public void toggleMill() {
-        formMill = !formMill;
-        if (formMill)
-            setIcon(new ImageIcon(PATH + color + MILL));
-        else
-            setIcon(new ImageIcon(PATH + color + ".png"));
+        setIcon(new ImageIcon(PATH + color + MILL));
     }
 
 }
